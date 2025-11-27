@@ -24,6 +24,7 @@ public class Main {
             )
         };
 
+        
         Camera cam = new Camera(new Point(0, 0, 5), new Rotation(0, 0, 0));
         Renderer renderer = new Renderer(cam);
         
