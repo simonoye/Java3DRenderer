@@ -1,11 +1,13 @@
 public class Renderer {
     Camera camera;
+    GUI out;
 
-    public Renderer(Camera camera) {
+    public Renderer(Camera camera, GUI out) {
         this.camera = camera;
+        this.out = out;
     }
 
-    public void renderMesh(Mesh mesh, GUI out) {
+    public void renderMesh(Mesh mesh) {
         for (Point p : mesh.points) {
             Point2D point = projectTo2D(p);
             out.drawPoint(point.x, point.y);
