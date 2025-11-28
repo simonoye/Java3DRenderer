@@ -15,8 +15,7 @@ public class RenderPanel extends JPanel {
 
     public void setPixel(int x, int y, int argbColor) {
         if (x >= 0 && x < buffer.getWidth() && y >= 0 && y < buffer.getHeight()) {
-            pixels[y * buffer.getWidth() + x] = argbColor;
-            //buffer.setRGB(x, y, argbColor);
+            pixels[y * buffer.getWidth() + x] = argbColor; //pixels is a 1D array
         }
     }
 

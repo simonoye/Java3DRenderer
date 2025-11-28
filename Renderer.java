@@ -7,12 +7,39 @@ public class Renderer {
         this.out = out;
     }
 
-    public void renderMesh(Mesh mesh) {
+    public void renderMeshPoints(Mesh mesh) {
         for (Point p : mesh.points) {
             Point2D point = projectTo2D(p);
-            out.drawPoint(point.x, point.y);
+            out.drawPixel(point.x, point.y);
         }
     }
+
+    public void drawMesh(Mesh mesh) {
+        int index = 0;
+        Point[] verticies;
+        for (int numVertices : mesh.numVertices) {
+            verticies = new Point[numVertices];
+            for (int i = 0; i < numVertices; ++i) {
+                verticies[i] = mesh.points[mesh.verticesIndex[i + index]];
+            }
+            index += numVertices;
+            drawFace(new Face(verticies));
+        }
+    }
+
+    public void drawFace(Face face) {
+        for (int i = 0; i < face.vertices.length - 1; i++) {
+            drawLine(face.vertices[i], face.vertices[i + 1]);
+        }
+        drawLine(face.vertices[0], face.vertices[face.vertices.length - 1]);
+    }
+
+    public void drawLine(Point p1, Point p2) {
+        Point2D p1_2D = projectTo2D(p1);
+        Point2D p2_2D = projectTo2D(p2);
+        out.drawLine(p1_2D.x, p1_2D.y, p2_2D.x, p2_2D.y);
+    }
+
 
     public Point2D projectTo2D(Point point) {
         Point relativePoint = toCameraSpace(point, camera);

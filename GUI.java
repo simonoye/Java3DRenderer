@@ -19,19 +19,51 @@ public class GUI {
         frame.setVisible(true);
     }
 
-    public void drawPoint(double x, double y) {
-        panel.setPixel(pixelCoordinateX(x), pixelCoordinateY(y), 0xFFFFFF);
+    public void drawPixel(double x, double y) {
+        panel.setPixel(getPixelX(x), getPixelY(y), 0xFFFFFF);
+    }
+
+    public void drawLine(double x1, double y1, double x2, double y2) {
+        int pixelX1 = getPixelX(x1);
+        int pixelY1 = getPixelX(y1);
+        int pixelX2 = getPixelX(x2);
+        int pixelY2 = getPixelX(y2);
+
+        int dx = Math.abs(pixelX2 - pixelX1);
+        int dy = Math.abs(pixelY2 - pixelY1);
+
+        int sx = x1 < x2 ? 1 : -1; // get direction to move
+        int sy = y1 < y2 ? 1 : -1;
+
+        int err = dx - dy;
+
+        while (true) {
+            panel.setPixel(pixelX1, pixelY1, 0xFFFFFF);
+
+            if (pixelX1 == pixelX2 && pixelY1 == pixelY2) { break; }
+
+            int e2 = 2 * err;
+
+            if (e2 > -dy) {
+                err -= dy;
+                pixelX1 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                pixelY1 += sy;
+            }
+        }
     }
 
     public void clear() {
         panel.clear();
     }
 
-    public int pixelCoordinateX(double x) {
+    public int getPixelX(double x) {
         return (int)Math.round(x * width + width / 2);
     }
 
-    public int pixelCoordinateY(double y) {
+    public int getPixelY(double y) {
         return (int) (-y * height + height / 2);
     }
 }
