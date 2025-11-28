@@ -1,46 +1,37 @@
+import java.io.IOException;
+
 public class Main {
-    public static void main(String[] args) {
-        Mesh mesh = new Mesh(
-            new int[]{4,4,4,4,4,4},
-            new int[]{
-                2,3,7,6,
-                0,4,5,1,
-                0,2,6,4,
-                1,3,7,5,
-                0,2,3,1,
-                4,6,7,5
-            },
-            new Point[]{
-            new Point(-1,-1, 1),
-            new Point( 1,-1, 1),
-            new Point(-1, 1, 1),
-            new Point( 1, 1, 1),
-            new Point(-1,-1,-1),
-            new Point( 1,-1,-1),
-            new Point(-1, 1,-1),
-            new Point( 1, 1,-1),
-        });
-        
-        Camera cam = new Camera(new Point(0, 0, 5), new Rotation(0, 0, 0));
+    public static void main(String[] args) { 
+        //System.out.print("\033[H\033[2J");
+
+        Camera cam1 = new Camera(new Point(0, 1, 0), new Rotation(0, 0, 0));
+        Camera cam = new Camera(new Point(0, 0, 0));
         GUI gui = new GUI(800,800);
         Renderer renderer = new Renderer(cam, gui);
-
+        
         try {
-            double time = 0;
+            long lastTime = System.nanoTime();
             while (true) {
-                Thread.sleep(10);
-                time += 10;
-                double t = time / 1000.0;     
+                long startTime = System.nanoTime();
+                Thread.sleep((long)10);
+                
+                double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since last frame
+                
+                renderer.cam.rotateAroundOrigin(t, 5 - t);
+                // System.out.println(renderer.cam.position);
+                // renderer.cam.position.z = -5 + t;
+
                 
                 gui.clear();
-                //renderer.drawLine(mesh.points[0], mesh.points[1]);
-                // renderer.renderMeshPoints(mesh); 
-                renderer.drawMesh(mesh);
+                renderer.drawWireframe(Shapes.sierpinskiTetrahedron(5));
                 gui.panel.repaint();
-
-                cam.position.x = 5 * Math.cos(t);
-                cam.position.z = 5 * Math.sin(t);
-                cam.rotation.y = - Math.atan2(cam.position.x, cam.position.z);
+                
+                long endTime = System.nanoTime();
+                
+                double deltaSeconds = (endTime - startTime) / 1_000_000_000.0;
+                // System.out.println("FPS: " + (1 / deltaSeconds));
+                // System.out.println("Frame time: " + (deltaSeconds * 1000) + "ms");
+                
                 // System.out.println(cam.rotation.y);
             }
         } catch (InterruptedException e) {}

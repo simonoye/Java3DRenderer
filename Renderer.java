@@ -1,28 +1,21 @@
 public class Renderer {
-    Camera camera;
+    Camera cam;
     GUI out;
 
-    public Renderer(Camera camera, GUI out) {
-        this.camera = camera;
+    public Renderer(Camera cam, GUI out) {
+        this.cam = cam;
         this.out = out;
     }
 
-    public void renderMeshPoints(Mesh mesh) {
-        for (Point p : mesh.points) {
-            Point2D point = projectTo2D(p);
-            out.drawPixel(point.x, point.y);
-        }
-    }
-
-    public void drawMesh(Mesh mesh) {
-        int index = 0;
+    public void drawWireframe(Mesh mesh) {
+        int offset = 0;
         Point[] verticies;
         for (int numVertices : mesh.numVertices) {
             verticies = new Point[numVertices];
             for (int i = 0; i < numVertices; ++i) {
-                verticies[i] = mesh.points[mesh.verticesIndex[i + index]];
+                verticies[i] = mesh.points[mesh.verticesIndex[i + offset]];
             }
-            index += numVertices;
+            offset += numVertices;
             drawFace(new Face(verticies));
         }
     }
@@ -36,22 +29,32 @@ public class Renderer {
 
     public void drawLine(Point p1, Point p2) {
         Point2D p1_2D = projectTo2D(p1);
+        if (p1_2D == null) { return; }
         Point2D p2_2D = projectTo2D(p2);
+        if (p2_2D == null) { return; }
+        
+        // System.out.println("a" + p1_2D + " : " + p2_2D);
+
         out.drawLine(p1_2D.x, p1_2D.y, p2_2D.x, p2_2D.y);
     }
 
-
     public Point2D projectTo2D(Point point) {
-        Point relativePoint = toCameraSpace(point, camera);
+        Point relativePoint = toCameraSpace(point, cam);
+        // System.out.println(relativePoint);
+        if (Math.abs(relativePoint.z) < 1e-6) { return null; }
+        if (relativePoint.z < 0) { return null; }
+
+        double aspect = out.width / out.height;
         return new Point2D( //convert from 3d to 2d through similiar triangles
-            relativePoint.x / relativePoint.z, 
-            relativePoint.y / relativePoint.z
+            (relativePoint.x / relativePoint.z) / aspect, 
+            (relativePoint.y / relativePoint.z)
         );
     }
 
     public Point toCameraSpace(Point p, Camera cam) {
-        // Translate point relative to camera
+        // Translate point relative to cam
         p = p.subtract(cam.position);
+        // p = cam.position.subtract(p);
 
         double cosY = Math.cos(cam.rotation.y);
         double sinY = Math.sin(cam.rotation.y);

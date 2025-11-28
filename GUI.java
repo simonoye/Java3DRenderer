@@ -11,7 +11,7 @@ public class GUI {
 
         panel = new RenderPanel(width, height);
         
-        frame = new JFrame("AWESOMESAUCE");
+        frame = new JFrame("PIECE OF SHIT");
         frame.add(panel);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -19,31 +19,30 @@ public class GUI {
         frame.setVisible(true);
     }
 
-    public void drawPixel(double x, double y) {
-        panel.setPixel(getPixelX(x), getPixelY(y), 0xFFFFFF);
-    }
-
-    public void drawLine(double x1, double y1, double x2, double y2) {
+    public void drawLine(double x1, double y1, double x2, double y2) {        
         int pixelX1 = getPixelX(x1);
-        int pixelY1 = getPixelX(y1);
+        int pixelY1 = getPixelY(y1);
         int pixelX2 = getPixelX(x2);
-        int pixelY2 = getPixelX(y2);
-
+        int pixelY2 = getPixelY(y2);
+        
         int dx = Math.abs(pixelX2 - pixelX1);
         int dy = Math.abs(pixelY2 - pixelY1);
 
-        int sx = x1 < x2 ? 1 : -1; // get direction to move
-        int sy = y1 < y2 ? 1 : -1;
+        int sx = pixelX1 < pixelX2 ? 1 : -1; // get direction to move
+        int sy = pixelY1 < pixelY2 ? 1 : -1;
 
         int err = dx - dy;
 
-        while (true) {
+        do {
+            if (pixelX1 > panel.getWidth() - 1 && sx == 1) { break; }
+            if (pixelX1 < 0 && sx == -1) { break; }
+            if (pixelY1 > panel.getHeight() - 1 && sy == 1) { break; }
+            if (pixelY1 < 0 && sy == -1) { break; }
+
             panel.setPixel(pixelX1, pixelY1, 0xFFFFFF);
-
-            if (pixelX1 == pixelX2 && pixelY1 == pixelY2) { break; }
-
+            
             int e2 = 2 * err;
-
+            
             if (e2 > -dy) {
                 err -= dy;
                 pixelX1 += sx;
@@ -52,7 +51,7 @@ public class GUI {
                 err += dx;
                 pixelY1 += sy;
             }
-        }
+        } while (pixelX1 != pixelX2 || pixelY1 != pixelY2);
     }
 
     public void clear() {

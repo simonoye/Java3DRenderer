@@ -14,6 +14,19 @@ public class Point extends Point2D{
         return new Point(x - other.x, y - other.y, z - other.z);
     }
 
+    public Point multiply(double scalar) {
+        return new Point(this.x * scalar, this.y * scalar, this.z * scalar);
+    }
+
+    public Point divide(double scalar) {
+        return new Point(this.x / scalar, this.y / scalar, this.z / scalar);
+    }
+
+    public double dotProduct(Point other) {
+        return x * other.x + y * other.y + z * other.z;
+    }
+
+
     @Override
     public String toString() {
         return super.toString() + String.format(", z: %.2f", z);
