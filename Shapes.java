@@ -2,6 +2,25 @@ import java.util.ArrayList;
 
 public class Shapes {
     static double phi = (1 + Math.sqrt(5)) / 2;
+
+    static Mesh bottom_cube() {
+        return new Mesh(
+            new int[]{2},
+            new int[]{
+                3,7
+            },
+            new Point[]{
+            new Point(-1,-1, 1),
+            new Point( 1,-1, 1),
+            new Point(-1, 1, 1),
+            new Point( 1, 1, 1),
+            new Point(-1,-1,-1),
+            new Point( 1,-1,-1),
+            new Point(-1, 1,-1),
+            new Point( 1, 1,-1),
+        });
+
+    }
     
     static Mesh icosahedron() {
         Point[] vertices = new Point[]{
