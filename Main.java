@@ -22,7 +22,7 @@ public class Main {
                 
                 long endTime = System.nanoTime();
                 double deltaSeconds = (endTime - startTime) / 1_000_000_000.0;
-                renderer.out.panel.setFPS((int) (1 / deltaSeconds));
+                renderer.out.panel.setFPS((int) (1 / deltaSeconds), deltaSeconds * 1000);
                 // System.out.println("Frame time: " + (deltaSeconds * 1000) + "ms");
             }
         } catch (InterruptedException e) {}

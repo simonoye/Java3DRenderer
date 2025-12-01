@@ -16,16 +16,17 @@ public class RenderPanel extends JPanel {
         setPreferredSize(new Dimension(width, height));
         pixels = ((DataBufferInt) buffer.getRaster().getDataBuffer()).getData();
 
+        setLayout(null);
+        
         text = new JLabel("FPS: ");
-        text.setFont(new Font("Arial", Font.BOLD, 32));
+        text.setFont(new Font("Arial", Font.BOLD, 26));
         text.setForeground(Color.RED);
-        text.setHorizontalAlignment(SwingConstants.LEFT);
-        text.setVerticalAlignment(SwingConstants.TOP);
+        text.setBounds(5, -15, 400, 100);
         add(text);
     }
 
-    public void setFPS(int fps) {
-        text.setText("FPS: " + fps);
+    public void setFPS(int fps, double t) {
+        text.setText(String.format("<html>FPS: %d<br>Frame time: %.3fms</html>", fps, t));
     }
 
     public void setPixel(int x, int y, int argbColor) {
