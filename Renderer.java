@@ -16,11 +16,35 @@ public class Renderer {
                 verticies[i] = mesh.points[mesh.verticesIndex[i + offset]];
             }
             offset += numVertices;
-            drawFace(new Face(verticies));
+            drawWireFace(new Face(verticies));
         }
     }
 
-    public void drawFace(Face face) {
+    public void drawMesh(Mesh mesh) {
+        int offset = 0;
+        Point[] verticies;
+        for (int faceNum = 0; faceNum < mesh.numVertices.length; faceNum++) {
+            verticies = new Point[mesh.numVertices[faceNum]];
+            for (int i = 0; i < mesh.numVertices[faceNum]; ++i) {
+                verticies[i] = mesh.points[mesh.verticesIndex[i + offset]];
+            }
+            offset += mesh.numVertices[faceNum];
+            drawFace(new Face(verticies), mesh.colors[faceNum].getRGB());
+        }
+    }
+
+    public void drawFace(Face face, int rgba) {
+        Point2D[] face2DVertices = new Point2D[face.vertices.length];
+
+        for (int i = 0; i < face2DVertices.length; ++i) {
+            face2DVertices[i] = projectTo2D(face.vertices[i]);
+            if (face2DVertices[i] == null) { return; }
+        }
+        out.drawFace(new Face2D(face2DVertices), rgba);
+    }  
+
+
+    public void drawWireFace(Face face) {
         for (int i = 0; i < face.vertices.length - 1; i++) {
             drawLine(face.vertices[i], face.vertices[i + 1]);
         }
@@ -33,14 +57,12 @@ public class Renderer {
         Point2D p2_2D = projectTo2D(p2);
         if (p2_2D == null) { return; }
         
-        // System.out.println("a" + p1_2D + " : " + p2_2D);
-
         out.drawLine(p1_2D.x, p1_2D.y, p2_2D.x, p2_2D.y);
     }
 
     public Point2D projectTo2D(Point point) {
         Point relativePoint = toCameraSpace(point, cam);
-        // System.out.println(relativePoint);
+
         if (Math.abs(relativePoint.z) < 1e-6) { return null; }
         if (relativePoint.z < 0) { return null; }
 

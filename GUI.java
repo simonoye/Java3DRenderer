@@ -19,6 +19,69 @@ public class GUI {
         frame.setVisible(true);
     }
 
+    public void drawFace(Face2D face, int rgba) {
+        Point2D[] pixelCoordinateVertices = new Point2D[face.vertices.length];
+
+        for (int i = 0; i < face.vertices.length; ++i) {
+            int x = convertToScreenCoordinatesX(face.vertices[i].x);
+            int y = convertToScreenCoordinatesY(face.vertices[i].y);
+            
+            pixelCoordinateVertices[i] = new Point2D(x,y);
+        }
+
+        if (pixelCoordinateVertices.length == 4) {
+            Point2D temp = pixelCoordinateVertices[1];
+            pixelCoordinateVertices[1] = pixelCoordinateVertices[3];
+            pixelCoordinateVertices[3] = temp;
+        }
+        
+        Face2D newFace = new Face2D(pixelCoordinateVertices);
+
+        boolean useClockwise = isClockwise(pixelCoordinateVertices);
+
+        Point2D minBounds = new Point2D(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        Point2D maxBounds = new Point2D(Integer.MIN_VALUE, Integer.MIN_VALUE);
+        for (Point2D p : pixelCoordinateVertices) {
+            if (p.x < minBounds.x) { minBounds.x = (int)p.x; }
+            if (p.x > maxBounds.x) { maxBounds.x = (int)p.x; }
+            if (p.y < minBounds.y) { minBounds.y = (int)p.y; }
+            if (p.y > maxBounds.y) { maxBounds.y = (int)p.y; }
+        }
+
+        for (int y = (int)minBounds.y; y < maxBounds.y; ++y) {
+            for (int x = (int)minBounds.x; x < maxBounds.x; ++x) {
+                if (pixelInsideFace(newFace, x, y, useClockwise)) {
+                    panel.setPixel(x, y, rgba);
+                }
+            }
+        }   
+    }
+
+    public boolean isClockwise(Point2D[] vertices) {
+        double sum = 0;
+        for (int i = 0; i < vertices.length; i++) {
+            Point2D p1 = vertices[i];
+            Point2D p2 = vertices[(i + 1) % vertices.length];
+            sum += (p2.x - p1.x) * (p2.y + p1.y);
+        }
+        return sum > 0;
+    }
+
+    public boolean pixelInsideFace(Face2D face, int x, int y, boolean clockwise) {
+        for (int i = 0; i < face.vertices.length; ++i) {
+            int next = (i + 1) % face.vertices.length;
+            if (!edgeFunction(face.vertices[i], face.vertices[next], x, y, clockwise)) {
+                return false;
+            } 
+        }       
+        return true;
+}
+
+    public boolean edgeFunction(Point2D p1, Point2D p2, int x, int y, boolean clockwise) {
+        double result = (x - p1.x) * (p2.y - p1.y) - (y - p1.y) * (p2.x - p1.x);
+        return clockwise ? result >= 0 : result <= 0;
+    }
+
     static final int INSIDE = 0; // 0000
     static final int LEFT   = 1; // 0001
     static final int RIGHT  = 2; // 0010

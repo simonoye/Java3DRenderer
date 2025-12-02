@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.util.ArrayList;
 
 public class Shapes {
@@ -5,9 +6,10 @@ public class Shapes {
 
     static Mesh bottom_cube() {
         return new Mesh(
-            new int[]{2},
+            new int[]{4,4},
             new int[]{
-                3,7
+                2,3,7,6,  // Back face - OK
+                0,2,6,4
             },
             new Point[]{
             new Point(-1,-1, 1),
@@ -19,8 +21,60 @@ public class Shapes {
             new Point(-1, 1,-1),
             new Point( 1, 1,-1),
         });
-
     }
+
+    static Mesh cube() {
+        return new Mesh(
+            new int[]{4,4,4,4,4,4},
+            new Color[]{Color.GREEN,
+                        Color.RED, 
+                        Color.BLUE,
+                        Color.PINK,
+                        Color.BLACK,
+                        Color.WHITE},
+            new int[]{
+                2,3,7,6,
+                0,4,5,1,
+                0,2,6,4,
+                1,3,7,5,
+                0,2,3,1,
+                4,6,7,5
+            },
+            new Point[]{
+            new Point(-1,-1, 1),
+            new Point( 1,-1, 1),
+            new Point(-1, 1, 1),
+            new Point( 1, 1, 1),
+            new Point(-1,-1,-1),
+            new Point( 1,-1,-1),
+            new Point(-1, 1,-1),
+            new Point( 1, 1,-1),
+        });
+    }
+
+    static Mesh cube2() {
+    return new Mesh(
+        new int[]{4,4,4,4,4,4},
+        new int[]{
+            2,3,7,6,  // Back face - OK
+            0,1,5,4,  // Front face - FIXED (was 0,4,5,1)
+            0,2,6,4,  // Left face - OK
+            1,3,7,5,  // Right face - OK
+            0,1,3,2,  // Bottom face - FIXED (was 0,2,3,1)
+            4,5,7,6   // Top face - FIXED (was 4,6,7,5)
+        },
+        new Point[]{
+            new Point(-1,-1, 1),  // 0
+            new Point( 1,-1, 1),  // 1
+            new Point(-1, 1, 1),  // 2
+            new Point( 1, 1, 1),  // 3
+            new Point(-1,-1,-1),  // 4
+            new Point( 1,-1,-1),  // 5
+            new Point(-1, 1,-1),  // 6
+            new Point( 1, 1,-1),  // 7
+        });
+    }
+
     
     static Mesh icosahedron() {
         Point[] vertices = new Point[]{
@@ -127,28 +181,6 @@ public class Shapes {
         );
     }
 
-    static Mesh cube() {
-        return new Mesh(
-            new int[]{4,4,4,4,4,4},
-            new int[]{
-                2,3,7,6,
-                0,4,5,1,
-                0,2,6,4,
-                1,3,7,5,
-                0,2,3,1,
-                4,6,7,5
-            },
-            new Point[]{
-            new Point(-1,-1, 1),
-            new Point( 1,-1, 1),
-            new Point(-1, 1, 1),
-            new Point( 1, 1, 1),
-            new Point(-1,-1,-1),
-            new Point( 1,-1,-1),
-            new Point(-1, 1,-1),
-            new Point( 1, 1,-1),
-        });
-    }
 
     static Mesh torus() {
         int radial = 32;    // slices around the circle

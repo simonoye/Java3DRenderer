@@ -1,10 +1,8 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 public class RenderPanel extends JPanel {
     BufferedImage buffer;

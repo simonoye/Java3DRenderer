@@ -2,8 +2,8 @@ public class Main {
     public static void main(String[] args) { 
         //System.out.print("\033[H\033[2J");
 
-        Camera cam1 = new Camera(new Point(-0.5, 0, -0.5), new Rotation(0, -0.7, 0));
-        Camera cam = new Camera(new Point(0, 0, 0));
+        Camera cam1 = new Camera(new Point(0, 0, 0), new Rotation(0, 0, 0));
+        // Camera cam = new Camera(new Point(0, 0, 0));
         GUI gui = new GUI(800,800);
         Renderer renderer = new Renderer(cam1, gui);
         
@@ -14,10 +14,13 @@ public class Main {
                 Thread.sleep((long)1);
                 double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since last frame
                 
-                renderer.cam.rotateAroundOrigin(t, 2.5 - 2.5 * Math.sin(t));
+                // renderer.cam.rotateAroundOrigin(t, 2.5 - 2.5 * Math.sin(t));
+                renderer.cam.rotateAroundOrigin(t, 5);
                 
                 gui.clear();
-                renderer.drawWireframe(Shapes.sierpinskiTetrahedron(5));
+                // renderer.drawWireframe(Shapes.sierpinskiTetrahedron(5));
+                renderer.drawMesh(Shapes.cube());
+                // renderer.drawWireframe(Shapes.bottom_cube());
                 gui.panel.repaint();
                 
                 long endTime = System.nanoTime();
