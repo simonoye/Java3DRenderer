@@ -12,6 +12,7 @@ public class Main {
         try {
             long lastTime = System.nanoTime();
             while (true) {
+                System.out.println(cam1.position);
                 long startTime = System.nanoTime();
                 Thread.sleep((long)1);
                 double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since last frame
@@ -20,11 +21,10 @@ public class Main {
                 renderer.cam.rotateAroundOrigin(t, 5);
                 
                 gui.clear();
-                // renderer.drawWireframe(Shapes.sierpinskiTetrahedron(5));
-                renderer.drawMesh(Shapes.cube());
-                // renderer.drawWireframe(Shapes.bottom_cube());
+                // renderer.drawMesh(Shapes.cube());
+                renderer.drawMesh(Shapes.sierpinskiTetrahedron(5));
                 gui.panel.repaint();
-                
+                 
                 long endTime = System.nanoTime();
                 double deltaSeconds = (endTime - startTime) / 1_000_000_000.0;
                 renderer.out.panel.setFPS((int) (1 / deltaSeconds), deltaSeconds * 1000);

@@ -36,7 +36,8 @@ public class Renderer {
                 verticies[i] = mesh.points[mesh.verticesIndex[i + offset]];
             }
             offset += mesh.numVertices[faceNum];
-            drawFace(new Face(verticies), mesh.colors[faceNum].getRGB());
+            if (mesh.colors == null) { drawFace(new Face(verticies), 0x00000); }
+            else { drawFace(new Face(verticies), mesh.colors[faceNum].getRGB()); }
         }
     }
 

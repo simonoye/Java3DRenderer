@@ -1,9 +1,12 @@
 package HelperClasses;
-public class Point extends Point2D{
+public class Point {
+    public double x;
+    public double y;
     public double z;
 
     public Point(double x, double y, double z) {
-        super(x, y);
+        this.x = x;
+        this.y = y;
         this.z = z;
     }
 
@@ -27,9 +30,8 @@ public class Point extends Point2D{
         return x * other.x + y * other.y + z * other.z;
     }
 
-
     @Override
     public String toString() {
-        return super.toString() + String.format(", z: %.2f", z);
+        return String.format("x: %.2f, y: %.2f, z: %.2f", x,y,z);
     }
 }
