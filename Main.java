@@ -12,17 +12,16 @@ public class Main {
         try {
             long lastTime = System.nanoTime();
             while (true) {
-                System.out.println(cam1.position);
                 long startTime = System.nanoTime();
                 Thread.sleep((long)1);
                 double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since last frame
                 
-                // renderer.cam.rotateAroundOrigin(t, 2.5 - 2.5 * Math.sin(t));
-                renderer.cam.rotateAroundOrigin(t, 5);
+                renderer.cam.rotateAroundOrigin(t, 3 - 3 * Math.sin(t));
+                // renderer.cam.rotateAroundOrigin(t, 5);
                 
                 gui.clear();
                 // renderer.drawMesh(Shapes.cube());
-                renderer.drawMesh(Shapes.sierpinskiTetrahedron(5));
+                renderer.drawMesh(Shapes.sierpinskiTetrahedron(1));
                 gui.panel.repaint();
                  
                 long endTime = System.nanoTime();

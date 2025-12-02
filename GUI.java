@@ -1,16 +1,21 @@
+import java.util.Arrays;
 import javax.swing.JFrame;
-
 import HelperClasses.Face2D;
-import HelperClasses.Point2D;
+import HelperClasses.ProjPoint;
 
 public class GUI {
     int width, height;
     RenderPanel panel;
     JFrame frame;
+    double[][] zBuffer;
 
     public GUI(int width, int height) {
         this.width = width;
         this.height = height;
+        zBuffer = new double[height][width];
+        for (int y = 0; y < height; y++) {
+            Arrays.fill(zBuffer[y], Double.MAX_VALUE);
+        }
 
         panel = new RenderPanel(width, height);
         
@@ -23,17 +28,17 @@ public class GUI {
     }
 
     public void drawFace(Face2D face, int rgba) {
-        Point2D[] pixelCoordinateVertices = new Point2D[face.vertices.length];
+        ProjPoint[] pixelCoordinateVertices = new ProjPoint[face.vertices.length];
 
         for (int i = 0; i < face.vertices.length; ++i) {
             int x = convertToScreenCoordinatesX(face.vertices[i].x);
             int y = convertToScreenCoordinatesY(face.vertices[i].y);
             
-            pixelCoordinateVertices[i] = new Point2D(x,y);
+            pixelCoordinateVertices[i] = new ProjPoint(x, y, face.vertices[i].z);
         }
 
         if (pixelCoordinateVertices.length == 4) {
-            Point2D temp = pixelCoordinateVertices[1];
+            ProjPoint temp = pixelCoordinateVertices[1];
             pixelCoordinateVertices[1] = pixelCoordinateVertices[3];
             pixelCoordinateVertices[3] = temp;
         }
@@ -42,17 +47,18 @@ public class GUI {
 
         boolean useClockwise = isClockwise(pixelCoordinateVertices);
 
-        Point2D minBounds = new Point2D(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        Point2D maxBounds = new Point2D(Integer.MIN_VALUE, Integer.MIN_VALUE);
-        for (Point2D p : pixelCoordinateVertices) {
-            if (p.x < minBounds.x) { minBounds.x = (int)p.x; }
-            if (p.x > maxBounds.x) { maxBounds.x = (int)p.x; }
-            if (p.y < minBounds.y) { minBounds.y = (int)p.y; }
-            if (p.y > maxBounds.y) { maxBounds.y = (int)p.y; }
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
+
+        for (ProjPoint p : pixelCoordinateVertices) {
+            if (p.x < minX) minX = (int)p.x;
+            if (p.x > maxX) maxX = (int)p.x;
+            if (p.y < minY) minY = (int)p.y;
+            if (p.y > maxY) maxY = (int)p.y;
         }
 
-        for (int y = (int)minBounds.y; y < maxBounds.y; ++y) {
-            for (int x = (int)minBounds.x; x < maxBounds.x; ++x) {
+        for (int y = minY; y < maxY; ++y) {
+            for (int x = minX; x < maxX; ++x) {
                 if (pixelInsideFace(newFace, x, y, useClockwise)) {
                     panel.setPixel(x, y, rgba);
                 }
@@ -60,11 +66,11 @@ public class GUI {
         }   
     }
 
-    public boolean isClockwise(Point2D[] vertices) {
+    public boolean isClockwise(ProjPoint[] vertices) {
         double sum = 0;
         for (int i = 0; i < vertices.length; i++) {
-            Point2D p1 = vertices[i];
-            Point2D p2 = vertices[(i + 1) % vertices.length];
+            ProjPoint p1 = vertices[i];
+            ProjPoint p2 = vertices[(i + 1) % vertices.length];
             sum += (p2.x - p1.x) * (p2.y + p1.y);
         }
         return sum > 0;
@@ -80,7 +86,7 @@ public class GUI {
         return true;
 }
 
-    public boolean edgeFunction(Point2D p1, Point2D p2, int x, int y, boolean clockwise) {
+    public boolean edgeFunction(ProjPoint p1, ProjPoint p2, int x, int y, boolean clockwise) {
         double result = (x - p1.x) * (p2.y - p1.y) - (y - p1.y) * (p2.x - p1.x);
         return clockwise ? result >= 0 : result <= 0;
     }

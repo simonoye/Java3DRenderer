@@ -3,7 +3,7 @@ import HelperClasses.Face;
 import HelperClasses.Face2D;
 import HelperClasses.Mesh;
 import HelperClasses.Point;
-import HelperClasses.Point2D;
+import HelperClasses.ProjPoint;
 
 public class Renderer {
     Camera cam;
@@ -42,7 +42,7 @@ public class Renderer {
     }
 
     public void drawFace(Face face, int rgba) {
-        Point2D[] face2DVertices = new Point2D[face.vertices.length];
+        ProjPoint[] face2DVertices = new ProjPoint[face.vertices.length];
 
         for (int i = 0; i < face2DVertices.length; ++i) {
             face2DVertices[i] = projectTo2D(face.vertices[i]);
@@ -60,24 +60,25 @@ public class Renderer {
     }
 
     public void drawLine(Point p1, Point p2) {
-        Point2D p1_2D = projectTo2D(p1);
+        ProjPoint p1_2D = projectTo2D(p1);
         if (p1_2D == null) { return; }
-        Point2D p2_2D = projectTo2D(p2);
+        ProjPoint p2_2D = projectTo2D(p2);
         if (p2_2D == null) { return; }
         
         out.drawLine(p1_2D.x, p1_2D.y, p2_2D.x, p2_2D.y);
     }
 
-    public Point2D projectTo2D(Point point) {
+    public ProjPoint projectTo2D(Point point) {
         Point relativePoint = toCameraSpace(point, cam);
 
         if (Math.abs(relativePoint.z) < 1e-6) { return null; }
         if (relativePoint.z < 0) { return null; }
 
         double aspect = out.width / out.height;
-        return new Point2D( //convert from 3d to 2d through similiar triangles
+        return new ProjPoint( //convert from 3d to 2d through similiar triangles
             (relativePoint.x / relativePoint.z) / aspect, 
-            (relativePoint.y / relativePoint.z)
+            (relativePoint.y / relativePoint.z),
+            relativePoint.z
         );
     }
 
