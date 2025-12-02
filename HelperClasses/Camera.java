@@ -1,7 +1,8 @@
+package HelperClasses;
 
 public class Camera {
-    Point position;
-    Rotation rotation;
+    public Point position;
+    public Rotation rotation;
 
     public Camera() {
         this.position = new Point(0, 0, 0);

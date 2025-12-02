@@ -1,3 +1,4 @@
+package HelperClasses;
 public class Point extends Point2D{
     public double z;
 

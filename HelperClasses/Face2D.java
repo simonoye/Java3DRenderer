@@ -1,5 +1,6 @@
+package HelperClasses;
 public class Face2D {
-    Point2D[] vertices;
+    public Point2D[] vertices;
 
     public Face2D(Point2D[] vertices) {
         this.vertices = vertices;

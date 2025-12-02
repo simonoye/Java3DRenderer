@@ -1,10 +1,11 @@
+package HelperClasses;
 import java.awt.Color;
 import java.util.ArrayList;
 
 public class Shapes {
     static double phi = (1 + Math.sqrt(5)) / 2;
 
-    static Mesh bottom_cube() {
+    public static Mesh bottom_cube() {
         return new Mesh(
             new int[]{4,4},
             new int[]{
@@ -23,7 +24,7 @@ public class Shapes {
         });
     }
 
-    static Mesh cube() {
+    public static Mesh cube() {
         return new Mesh(
             new int[]{4,4,4,4,4,4},
             new Color[]{Color.GREEN,
@@ -52,31 +53,31 @@ public class Shapes {
         });
     }
 
-    static Mesh cube2() {
-    return new Mesh(
-        new int[]{4,4,4,4,4,4},
-        new int[]{
-            2,3,7,6,  // Back face - OK
-            0,1,5,4,  // Front face - FIXED (was 0,4,5,1)
-            0,2,6,4,  // Left face - OK
-            1,3,7,5,  // Right face - OK
-            0,1,3,2,  // Bottom face - FIXED (was 0,2,3,1)
-            4,5,7,6   // Top face - FIXED (was 4,6,7,5)
-        },
-        new Point[]{
-            new Point(-1,-1, 1),  // 0
-            new Point( 1,-1, 1),  // 1
-            new Point(-1, 1, 1),  // 2
-            new Point( 1, 1, 1),  // 3
-            new Point(-1,-1,-1),  // 4
-            new Point( 1,-1,-1),  // 5
-            new Point(-1, 1,-1),  // 6
-            new Point( 1, 1,-1),  // 7
+    public static Mesh cube2() {
+        return new Mesh(
+            new int[]{4,4,4,4,4,4},
+            new int[]{
+                2,3,7,6,  // Back face - OK
+                0,1,5,4,  // Front face - FIXED (was 0,4,5,1)
+                0,2,6,4,  // Left face - OK
+                1,3,7,5,  // Right face - OK
+                0,1,3,2,  // Bottom face - FIXED (was 0,2,3,1)
+                4,5,7,6   // Top face - FIXED (was 4,6,7,5)
+            },
+            new Point[]{
+                new Point(-1,-1, 1),  // 0
+                new Point( 1,-1, 1),  // 1
+                new Point(-1, 1, 1),  // 2
+                new Point( 1, 1, 1),  // 3
+                new Point(-1,-1,-1),  // 4
+                new Point( 1,-1,-1),  // 5
+                new Point(-1, 1,-1),  // 6
+                new Point( 1, 1,-1),  // 7
         });
     }
 
     
-    static Mesh icosahedron() {
+    public static Mesh icosahedron() {
         Point[] vertices = new Point[]{
             new Point(-1,  phi, 0),
             new Point( 1,  phi, 0),
@@ -132,7 +133,7 @@ public class Shapes {
         );
     }
 
-    static Mesh prism() {
+    public static Mesh prism() {
         return new Mesh(
             new int[]{3,3,4,4,4,4}, // 2 triangles, 4 quads
             new int[]{
@@ -156,7 +157,7 @@ public class Shapes {
         );
     }
 
-    static Mesh octohedron() {
+    public static Mesh octohedron() {
         return new Mesh(
             new int[]{3,3,3,3,3,3,3,3}, // 8 triangular faces
             new int[]{
@@ -182,7 +183,7 @@ public class Shapes {
     }
 
 
-    static Mesh torus() {
+    public static Mesh torus() {
         int radial = 32;    // slices around the circle
         int tubular = 32;   // slices around the tube
         Point[] points = new Point[radial * tubular];
@@ -215,7 +216,7 @@ public class Shapes {
         return new Mesh(numVertices, verticesIndex, points);
     }
 
-    static Mesh starIcosahedron() {
+    public static Mesh starIcosahedron() {
         Point[] basePoints = new Point[]{
             new Point(-1,  phi,  0),
             new Point( 1,  phi,  0),
@@ -266,7 +267,7 @@ public class Shapes {
         return new Mesh(numVertices, verticesIndex, points);
     }
 
-    static Mesh torusKnot(int steps, double R, double r, int p, int q) {
+    public static Mesh torusKnot(int steps, double R, double r, int p, int q) {
         Point[] points = new Point[steps];
         for (int i = 0; i < steps; i++) {
             double t = 2 * Math.PI * i / steps;
@@ -298,7 +299,7 @@ public class Shapes {
         return new Mesh(numVertices, verticesIndex, points);
     }
 
-    static Mesh sierpinskiTetrahedron(int level) {
+    public static Mesh sierpinskiTetrahedron(int level) {
         Point[] basePoints = new Point[]{
             new Point(1, 1, 1),
             new Point(-1, -1, 1),
@@ -326,7 +327,7 @@ public class Shapes {
         return new Mesh(numVertices, verticesIndex, points);
     }
 
-    static void subdivideTetra(Point a, Point b, Point c, Point d, int level, ArrayList<Point> pointsList, ArrayList<int[]> facesList) {
+    public static void subdivideTetra(Point a, Point b, Point c, Point d, int level, ArrayList<Point> pointsList, ArrayList<int[]> facesList) {
         if (level == 0) {
             int baseIndex = pointsList.size();
             pointsList.add(a);

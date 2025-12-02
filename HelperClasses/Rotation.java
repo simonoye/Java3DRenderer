@@ -1,3 +1,4 @@
+package HelperClasses;
 public class Rotation {
     public double x;
     public double y;

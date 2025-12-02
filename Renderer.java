@@ -1,3 +1,10 @@
+import HelperClasses.Camera;
+import HelperClasses.Face;
+import HelperClasses.Face2D;
+import HelperClasses.Mesh;
+import HelperClasses.Point;
+import HelperClasses.Point2D;
+
 public class Renderer {
     Camera cam;
     GUI out;

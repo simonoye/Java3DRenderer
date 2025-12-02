@@ -1,9 +1,10 @@
+package HelperClasses;
 import java.awt.Color;
 
 public class Mesh {
-    Point[] points;
-    int[] numVertices, verticesIndex;
-    Color[] colors;
+    public Point[] points;
+    public int[] numVertices, verticesIndex;
+    public Color[] colors;
 
     public Mesh(int[] numVertices, int[] verticesIndex, Point[] points) {
         this.numVertices = numVertices;

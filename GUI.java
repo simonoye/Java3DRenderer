@@ -1,5 +1,8 @@
 import javax.swing.JFrame;
 
+import HelperClasses.Face2D;
+import HelperClasses.Point2D;
+
 public class GUI {
     int width, height;
     RenderPanel panel;
