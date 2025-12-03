@@ -1,4 +1,9 @@
-import HelperClasses.*;
+import HelperClasses.Camera;
+import HelperClasses.Mesh;
+import HelperClasses.Shapes;
+import HelperClasses.Point;
+import HelperClasses.Rotation;
+
 
 public class Main {
     public static void main(String[] args) { 
