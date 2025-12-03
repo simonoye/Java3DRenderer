@@ -1,7 +1,5 @@
 package HelperClasses;
 
-import java.net.PortUnreachableException;
-
 public class ProjPoint {
     public double x;
     public double y;

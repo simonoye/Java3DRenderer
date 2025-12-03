@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 import HelperClasses.Camera;
 import HelperClasses.Face;
 import HelperClasses.ProjFace;
