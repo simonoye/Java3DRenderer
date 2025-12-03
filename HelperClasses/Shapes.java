@@ -1,6 +1,7 @@
 package HelperClasses;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Shapes {
     static double phi = (1 + Math.sqrt(5)) / 2;
@@ -27,19 +28,19 @@ public class Shapes {
     public static Mesh cube() {
         return new Mesh(
             new int[]{4,4,4,4,4,4},
-            new Color[]{Color.GREEN,
-                        Color.RED, 
-                        Color.BLUE,
-                        Color.PINK,
-                        Color.BLACK,
-                        Color.WHITE},
+            new int[]{Color.GREEN.getRGB(),
+                        Color.RED.getRGB(), 
+                        Color.BLUE.getRGB(),
+                        Color.PINK.getRGB(),
+                        Color.BLACK.getRGB(),
+                        Color.WHITE.getRGB()},
             new int[]{
-                2,3,7,6,
-                0,4,5,1,
-                0,2,6,4,
-                1,3,7,5,
-                0,2,3,1,
-                4,6,7,5
+                2,3,1,0,  // Front face (z=1): counter-clockwise from outside
+                4,5,7,6,  // Back face (z=-1): counter-clockwise from outside
+                6,7,3,2,  // Top face (y=1): counter-clockwise from above
+                0,1,5,4,  // Bottom face (y=-1): counter-clockwise from below
+                0,4,6,2,  // Left face (x=-1): counter-clockwise from left
+                1,3,7,5   // Right face (x=1): counter-clockwise from right
             },
             new Point[]{
             new Point(-1,-1, 1),
@@ -267,35 +268,69 @@ public class Shapes {
         return new Mesh(numVertices, verticesIndex, points);
     }
 
-    public static Mesh torusKnot(int steps, double R, double r, int p, int q) {
-        Point[] points = new Point[steps];
+    public static Mesh torusKnot(int steps, double R, double r, int p, int q, int tubeSegments) {
+        // Generate the curve points
+        Point[] curvePoints = new Point[steps];
         for (int i = 0; i < steps; i++) {
             double t = 2 * Math.PI * i / steps;
             double x = (R + r * Math.cos(q * t)) * Math.cos(p * t);
             double y = (R + r * Math.cos(q * t)) * Math.sin(p * t);
             double z = r * Math.sin(q * t);
-            points[i] = new Point(x, y, z);
+            curvePoints[i] = new Point(x, y, z);
         }
-
-        // Triangles connecting sequential points to form "tube" faces
-        int numFaces = steps;
-        int[] numVertices = new int[numFaces * 2]; // 2 triangles per quad
-        int[] verticesIndex = new int[numFaces * 6];
-
+        
+        // Create tube around the curve
+        double tubeRadius = 0.2; // Adjust thickness
+        int totalPoints = steps * tubeSegments;
+        Point[] points = new Point[totalPoints];
+        
         for (int i = 0; i < steps; i++) {
-            int next = (i + 1) % steps;
-            // triangle 1
-            numVertices[i * 2] = 3;
-            verticesIndex[i * 6 + 0] = i;
-            verticesIndex[i * 6 + 1] = next;
-            verticesIndex[i * 6 + 2] = (i + steps / 10) % steps; // offset for width
-            // triangle 2
-            numVertices[i * 2 + 1] = 3;
-            verticesIndex[i * 6 + 3] = next;
-            verticesIndex[i * 6 + 4] = (next + steps / 10) % steps;
-            verticesIndex[i * 6 + 5] = (i + steps / 10) % steps;
+            Point current = curvePoints[i];
+            Point next = curvePoints[(i + 1) % steps];
+            
+            // Simple normal approximation (perpendicular to curve direction)
+            double dx = next.x - current.x;
+            double dy = next.y - current.y;
+            double dz = next.z - current.z;
+            double len = Math.sqrt(dx*dx + dy*dy + dz*dz);
+            dx /= len; dy /= len; dz /= len;
+            
+            // Create circle of points around this position
+            for (int j = 0; j < tubeSegments; j++) {
+                double angle = 2 * Math.PI * j / tubeSegments;
+                // Perpendicular vectors (simplified - better to use Frenet frame)
+                double nx = Math.cos(angle) * tubeRadius;
+                double ny = Math.sin(angle) * tubeRadius;
+                
+                points[i * tubeSegments + j] = new Point(
+                    current.x + nx,
+                    current.y + ny,
+                    current.z
+                );
+            }
         }
-
+        
+        // Create quad faces connecting the tube segments
+        int numFaces = steps * tubeSegments;
+        int[] numVertices = new int[numFaces];
+        int[] verticesIndex = new int[numFaces * 4];
+        
+        for (int i = 0; i < steps; i++) {
+            for (int j = 0; j < tubeSegments; j++) {
+                int idx = i * tubeSegments + j;
+                int nextI = ((i + 1) % steps) * tubeSegments + j;
+                int nextJ = i * tubeSegments + ((j + 1) % tubeSegments);
+                int nextBoth = ((i + 1) % steps) * tubeSegments + ((j + 1) % tubeSegments);
+                
+                int faceIdx = idx;
+                numVertices[faceIdx] = 4;
+                verticesIndex[faceIdx * 4 + 0] = idx;
+                verticesIndex[faceIdx * 4 + 1] = nextI;
+                verticesIndex[faceIdx * 4 + 2] = nextBoth;
+                verticesIndex[faceIdx * 4 + 3] = nextJ;
+            }
+        }
+        
         return new Mesh(numVertices, verticesIndex, points);
     }
 
@@ -324,20 +359,30 @@ public class Shapes {
         }
 
         Point[] points = pointsList.toArray(new Point[0]);
-        return new Mesh(numVertices, verticesIndex, points);
+        Random r = new Random();
+        int[] randomColors = new int[pointsList.size()];
+        for (int i = 0; i < randomColors.length; ++i) {
+            randomColors[i] = r.nextInt(16777216);
+        }
+        return new Mesh(numVertices, randomColors, verticesIndex, points);
     }
 
-    public static void subdivideTetra(Point a, Point b, Point c, Point d, int level, ArrayList<Point> pointsList, ArrayList<int[]> facesList) {
+        
+    private static void subdivideTetra(Point a, Point b, Point c, Point d, int level, ArrayList<Point> pointsList, ArrayList<int[]> facesList) {
         if (level == 0) {
             int baseIndex = pointsList.size();
             pointsList.add(a);
             pointsList.add(b);
             pointsList.add(c);
             pointsList.add(d);
-            // 4 triangular faces of tetrahedron
-            facesList.add(new int[]{baseIndex, baseIndex+1, baseIndex+2});
+            // 4 triangular faces with consistent outward-facing winding
+            // Face opposite to d (vertices a,b,c) - viewed from outside
+            facesList.add(new int[]{baseIndex, baseIndex+2, baseIndex+1});
+            // Face opposite to c (vertices a,b,d) - viewed from outside
             facesList.add(new int[]{baseIndex, baseIndex+1, baseIndex+3});
-            facesList.add(new int[]{baseIndex, baseIndex+2, baseIndex+3});
+            // Face opposite to b (vertices a,c,d) - viewed from outside
+            facesList.add(new int[]{baseIndex, baseIndex+3, baseIndex+2});
+            // Face opposite to a (vertices b,c,d) - viewed from outside
             facesList.add(new int[]{baseIndex+1, baseIndex+2, baseIndex+3});
             return;
         }

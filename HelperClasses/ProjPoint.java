@@ -1,4 +1,7 @@
 package HelperClasses;
+
+import java.net.PortUnreachableException;
+
 public class ProjPoint {
     public double x;
     public double y;
@@ -10,7 +13,15 @@ public class ProjPoint {
         this.z = z;
     }
 
+    public ProjPoint subtract(ProjPoint other) {
+        return new ProjPoint(x - other.x, y - other.y, z - other.z);
+    }
+
+    public double dot(ProjPoint other) {
+        return x * other.x + y * other.y + z * other.z;
+    }
+
     public String toString() {
-        return String.format("x: %.2f, y: %.2f, z: + %.2f", x, y, z);
+        return String.format("x: %.2f, y: %.2f, z: %.2f", x, y, z);
     }
 }

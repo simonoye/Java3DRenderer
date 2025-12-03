@@ -1,9 +1,11 @@
 package HelperClasses;
-public class Face2D {
+public class ProjFace {
     public ProjPoint[] vertices;
+    public int points;
 
-    public Face2D(ProjPoint[] vertices) {
+    public ProjFace(ProjPoint[] vertices) {
         this.vertices = vertices;
+        this.points = vertices.length;
     }
 
     @Override

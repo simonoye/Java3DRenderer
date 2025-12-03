@@ -1,6 +1,8 @@
+import java.awt.Color;
 import java.util.Arrays;
 import javax.swing.JFrame;
-import HelperClasses.Face2D;
+
+import HelperClasses.ProjFace;
 import HelperClasses.ProjPoint;
 
 public class GUI {
@@ -8,77 +10,140 @@ public class GUI {
     RenderPanel panel;
     JFrame frame;
     double[][] zBuffer;
+    int[][] colorBuffer;
 
     public GUI(int width, int height) {
         this.width = width;
         this.height = height;
+
         zBuffer = new double[height][width];
         for (int y = 0; y < height; y++) {
             Arrays.fill(zBuffer[y], Double.MAX_VALUE);
         }
+        colorBuffer = new int[height][width];
 
         panel = new RenderPanel(width, height);
-        
         frame = new JFrame("PIECE OF SHIT");
         frame.add(panel);
-
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }
 
-    public void drawFace(Face2D face, int rgba) {
-        ProjPoint[] pixelCoordinateVertices = new ProjPoint[face.vertices.length];
+    public void drawFace(ProjFace face, int rgb) {
+        ProjPoint[] pixelCoordinateVertices = new ProjPoint[face.points];
 
-        for (int i = 0; i < face.vertices.length; ++i) {
+        for (int i = 0; i < face.points; ++i) {
             int x = convertToScreenCoordinatesX(face.vertices[i].x);
             int y = convertToScreenCoordinatesY(face.vertices[i].y);
             
             pixelCoordinateVertices[i] = new ProjPoint(x, y, face.vertices[i].z);
         }
-
-        if (pixelCoordinateVertices.length == 4) {
-            ProjPoint temp = pixelCoordinateVertices[1];
-            pixelCoordinateVertices[1] = pixelCoordinateVertices[3];
-            pixelCoordinateVertices[3] = temp;
-        }
         
-        Face2D newFace = new Face2D(pixelCoordinateVertices);
+        ProjFace newFace = new ProjFace(pixelCoordinateVertices);
 
-        boolean useClockwise = isClockwise(pixelCoordinateVertices);
+        // boolean useClockwise = isClockwise(newFace);
 
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
 
         for (ProjPoint p : pixelCoordinateVertices) {
-            if (p.x < minX) minX = (int)p.x;
-            if (p.x > maxX) maxX = (int)p.x;
-            if (p.y < minY) minY = (int)p.y;
-            if (p.y > maxY) maxY = (int)p.y;
+            if (p.x < minX) { minX = (int)p.x; }
+            if (p.x > maxX) { maxX = (int)p.x; }
+            if (p.y < minY) { minY = (int)p.y; }
+            if (p.y > maxY) { maxY = (int)p.y; }
         }
 
-        for (int y = minY; y < maxY; ++y) {
-            for (int x = minX; x < maxX; ++x) {
-                if (pixelInsideFace(newFace, x, y, useClockwise)) {
-                    panel.setPixel(x, y, rgba);
+        for (int y = Math.max(minY, 0); y < Math.min(maxY + 1, height); ++y) { //clamp y bounds
+            for (int x = Math.max(minX, 0); x < Math.min(maxX + 1, width); ++x) { //clamp x bounds
+                if (pixelInsideFace(newFace, x, y, true)) {
+                    if (newFace.points == 3) {
+                        double z = calculateZOnTriangle(newFace, x, y);
+                        if (z <= zBuffer[y][x]) { 
+                            zBuffer[y][x] = z;
+                            colorBuffer[y][x] = rgb;
+                        }
+                    }
                 }
             }
-        }   
+        }
     }
 
-    public boolean isClockwise(ProjPoint[] vertices) {
+    public void drawBuffer() {
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                if (zBuffer[y][x] < Double.MAX_VALUE) {
+                    panel.setPixel(x, y, colorBuffer[y][x]);
+                } else {
+                    panel.setPixel(x, y, 0xFF0D1519);
+                }
+            }
+        }
+    }
+    
+    public void clearBuffer() { // we dont need to clear color buffer
+        for (int y = 0; y < height; y++) { 
+            Arrays.fill(zBuffer[y], Double.MAX_VALUE);
+        }
+    }
+    public double calculateZOnTriangle(ProjFace face, double px, double py) {
+        // First, calculate barycentric coordinates from the x,y position
+        // Using the 2D projection of the triangle
+
+        ProjPoint A = face.vertices[0];
+        ProjPoint B = face.vertices[1];
+        ProjPoint C = face.vertices[2];
+
+        // System.out.println(face);
+        // System.out.println(px + " : " + py);
+        
+        // Vector from A to C (in 2D)
+        double v0x = C.x - A.x;
+        double v0y = C.y - A.y;
+        
+        // Vector from A to B (in 2D)
+        double v1x = B.x - A.x;
+        double v1y = B.y - A.y;
+        
+        // Vector from A to P (in 2D)
+        double v2x = px - A.x;
+        double v2y = py - A.y;
+
+        // Compute dot products
+        double dot00 = v0x * v0x + v0y * v0y;
+        double dot01 = v0x * v1x + v0y * v1y;
+        double dot02 = v0x * v2x + v0y * v2y;
+        double dot11 = v1x * v1x + v1y * v1y;
+        double dot12 = v1x * v2x + v1y * v2y;
+
+        // Compute barycentric coordinates
+        double invDenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
+        double w = (dot11 * dot02 - dot01 * dot12) * invDenom;  // weight for C
+        double v = (dot00 * dot12 - dot01 * dot02) * invDenom;  // weight for B
+        double u = 1.0 - v - w;                                   // weight for A
+
+        // Check if point is inside triangle (optional)
+        if (u < 0 || v < 0 || w < 0) {
+            // Point is outside the triangle
+            return Double.NaN;  // or handle error appropriately
+        }
+
+        // Now interpolate the z-coordinate
+        return u * A.z + v * B.z + w * C.z;
+    }
+    public boolean isClockwise(ProjFace face) {
         double sum = 0;
-        for (int i = 0; i < vertices.length; i++) {
-            ProjPoint p1 = vertices[i];
-            ProjPoint p2 = vertices[(i + 1) % vertices.length];
+        for (int i = 0; i < face.points; i++) {
+            ProjPoint p1 = face.vertices[i];
+            ProjPoint p2 = face.vertices[(i + 1) % face.points];
             sum += (p2.x - p1.x) * (p2.y + p1.y);
         }
         return sum > 0;
     }
 
-    public boolean pixelInsideFace(Face2D face, int x, int y, boolean clockwise) {
-        for (int i = 0; i < face.vertices.length; ++i) {
-            int next = (i + 1) % face.vertices.length;
+    public boolean pixelInsideFace(ProjFace face, int x, int y, boolean clockwise) {
+        for (int i = 0; i < face.points; ++i) {
+            int next = (i + 1) % face.points;
             if (!edgeFunction(face.vertices[i], face.vertices[next], x, y, clockwise)) {
                 return false;
             } 
@@ -116,7 +181,7 @@ public class GUI {
         if ((p1Code & p2Code) != INSIDE) { return; } // if on same side of screen
 
         else if (p1Code != INSIDE && p2Code != INSIDE) { // if both arent inside screen
-            if (!isSegmentContainedByBounds(p1[0], p1[1], p2[0], p2[1])) { return; }
+            if (!isSegmentContainedByScreen(p1[0], p1[1], p2[0], p2[1])) { return; }
         }
 
         else if ((p1Code | p2Code) != INSIDE) { // if at least one is outside screen
@@ -134,13 +199,10 @@ public class GUI {
         return crossProduct > 0;
     }
 
-    public boolean isSegmentContainedByBounds(int x1, int y1, int x2, int y2) {
+    public boolean isSegmentContainedByScreen(int x1, int y1, int x2, int y2) {
         boolean intersectsTop = intersectSegments(x1, y1, x2, y2, 0, 0, width, 0);
-
         boolean intersectsBottom = intersectSegments(x1, y1, x2, y2, 0, height, width, height);
-
         boolean intersectsLeft = intersectSegments(x1, y1, x2, y2, 0, 0, 0, height);
-
         boolean intersectsRight = intersectSegments(x1, y1, x2, y2, width, 0, width, height);
 
         if (intersectsTop || intersectsBottom || intersectsLeft || intersectsRight) {
@@ -195,7 +257,7 @@ public class GUI {
     }
 
     public void bresenham(int x1, int y1, int x2, int y2) {
-    
+        
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
         
@@ -211,8 +273,8 @@ public class GUI {
             if (x1 < 0 && sx == -1) { break; }
             if (y1 > panel.getHeight() - 1 && sy == 1) { break; }
             if (y1 < 0 && sy == -1) { break; }
-    
-            panel.setPixel(x1, y1, 0xFFFFFF);
+            
+            panel.setPixel(x1, y1, Color.RED.getRGB());
             
             int e2 = 2 * err;
             
@@ -236,11 +298,6 @@ public class GUI {
         else if (y >= height) { out |= BOTTOM; }
         
         return out;
-    }
-
-
-    public void clear() {
-        panel.clear();
     }
 
     public int convertToScreenCoordinatesX(double x) {

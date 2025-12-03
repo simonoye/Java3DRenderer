@@ -1,6 +1,8 @@
+import java.util.Arrays;
+
 import HelperClasses.Camera;
 import HelperClasses.Face;
-import HelperClasses.Face2D;
+import HelperClasses.ProjFace;
 import HelperClasses.Mesh;
 import HelperClasses.Point;
 import HelperClasses.ProjPoint;
@@ -8,58 +10,59 @@ import HelperClasses.ProjPoint;
 public class Renderer {
     Camera cam;
     GUI out;
+    double aspect;
 
     public Renderer(Camera cam, GUI out) {
         this.cam = cam;
         this.out = out;
+        aspect = (double) out.width / out.height;
     }
 
     public void drawWireframe(Mesh mesh) {
         int offset = 0;
-        Point[] verticies;
+        Point[] vertices;
         for (int numVertices : mesh.numVertices) {
-            verticies = new Point[numVertices];
+            vertices = new Point[numVertices];
             for (int i = 0; i < numVertices; ++i) {
-                verticies[i] = mesh.points[mesh.verticesIndex[i + offset]];
+                vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
             }
             offset += numVertices;
-            drawWireFace(new Face(verticies));
+            drawWireFace(new Face(vertices));
         }
     }
 
     public void drawMesh(Mesh mesh) {
         int offset = 0;
-        Point[] verticies;
+        Point[] vertices;
         for (int faceNum = 0; faceNum < mesh.numVertices.length; faceNum++) {
-            verticies = new Point[mesh.numVertices[faceNum]];
+            vertices = new Point[mesh.numVertices[faceNum]];
             for (int i = 0; i < mesh.numVertices[faceNum]; ++i) {
-                verticies[i] = mesh.points[mesh.verticesIndex[i + offset]];
+                vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
             }
             offset += mesh.numVertices[faceNum];
-            if (mesh.colors == null) { drawFace(new Face(verticies), 0x00000); }
-            else { drawFace(new Face(verticies), mesh.colors[faceNum].getRGB()); }
+            int color = (mesh.colorRGB == null) ? 0x00000 : mesh.colorRGB[faceNum];
+            drawFace(new Face(vertices), color); 
         }
     }
 
-    public void drawFace(Face face, int rgba) {
+    private void drawFace(Face face, int rgb) {
         ProjPoint[] face2DVertices = new ProjPoint[face.vertices.length];
 
         for (int i = 0; i < face2DVertices.length; ++i) {
             face2DVertices[i] = projectTo2D(face.vertices[i]);
             if (face2DVertices[i] == null) { return; }
         }
-        out.drawFace(new Face2D(face2DVertices), rgba);
+        out.drawFace(new ProjFace(face2DVertices), rgb);
     }  
 
-
-    public void drawWireFace(Face face) {
+    private void drawWireFace(Face face) {
         for (int i = 0; i < face.vertices.length - 1; i++) {
             drawLine(face.vertices[i], face.vertices[i + 1]);
         }
         drawLine(face.vertices[0], face.vertices[face.vertices.length - 1]);
     }
 
-    public void drawLine(Point p1, Point p2) {
+    private void drawLine(Point p1, Point p2) {
         ProjPoint p1_2D = projectTo2D(p1);
         if (p1_2D == null) { return; }
         ProjPoint p2_2D = projectTo2D(p2);
@@ -68,35 +71,32 @@ public class Renderer {
         out.drawLine(p1_2D.x, p1_2D.y, p2_2D.x, p2_2D.y);
     }
 
-    public ProjPoint projectTo2D(Point point) {
+    private ProjPoint projectTo2D(Point point) {
         Point relativePoint = toCameraSpace(point, cam);
 
         if (Math.abs(relativePoint.z) < 1e-6) { return null; }
-        if (relativePoint.z < 0) { return null; }
+        if (relativePoint.z > 0) { return null; }
 
-        double aspect = out.width / out.height;
         return new ProjPoint( //convert from 3d to 2d through similiar triangles
             (relativePoint.x / relativePoint.z) / aspect, 
             (relativePoint.y / relativePoint.z),
-            relativePoint.z
+            -relativePoint.z
         );
     }
 
-    public Point toCameraSpace(Point p, Camera cam) {
-        // Translate point relative to cam
+    private Point toCameraSpace(Point p, Camera cam) {
         p = p.subtract(cam.position);
-        // p = cam.position.subtract(p);
 
         double cosY = Math.cos(cam.rotation.y);
         double sinY = Math.sin(cam.rotation.y);
         double cosX = Math.cos(cam.rotation.x);
         double sinX = Math.sin(cam.rotation.x);
 
-        // Yaw rotation (around Y axis)
+        // y axis rotation
         double x1 = p.x * cosY + p.z * sinY;
         double z1 = - p.x * sinY + p.z * cosY;
 
-        // Pitch rotation (around X axis)
+        // x axis rotation
         double y2 = p.y * cosX - z1 * sinX;
         double z2 = p.y * sinX + z1 * cosX;
 

@@ -27,6 +27,6 @@ public class Camera {
     public void rotateAroundOrigin(double t, double radius) {
         position.x = radius * Math.cos(t);
         position.z = radius * Math.sin(t);
-        rotation.y = -Math.atan2(position.x, position.z) - Math.PI;
+        rotation.y = -Math.atan2(position.x, position.z); 
     }
 }

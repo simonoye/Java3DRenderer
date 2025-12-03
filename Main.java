@@ -2,33 +2,37 @@ import HelperClasses.*;
 
 public class Main {
     public static void main(String[] args) { 
-        //System.out.print("\033[H\033[2J");
-
-        Camera cam1 = new Camera(new Point(0, 0, 0), new Rotation(0, 0, 0));
-        // Camera cam = new Camera(new Point(0, 0, 0));
-        GUI gui = new GUI(800,800);
+        Camera cam1 = new Camera(new Point(0, 0, -5), new Rotation(0, 0, 0));
+        // Camera cam = new Camera();
+        GUI gui = new GUI(1500,900);
         Renderer renderer = new Renderer(cam1, gui);
-        
-        try {
-            long lastTime = System.nanoTime();
-            while (true) {
-                long startTime = System.nanoTime();
-                Thread.sleep((long)1);
-                double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since last frame
-                
-                renderer.cam.rotateAroundOrigin(t, 3 - 3 * Math.sin(t));
-                // renderer.cam.rotateAroundOrigin(t, 5);
-                
-                gui.clear();
-                // renderer.drawMesh(Shapes.cube());
-                renderer.drawMesh(Shapes.sierpinskiTetrahedron(1));
-                gui.panel.repaint();
-                 
-                long endTime = System.nanoTime();
-                double deltaSeconds = (endTime - startTime) / 1_000_000_000.0;
-                renderer.out.panel.setFPS((int) (1 / deltaSeconds), deltaSeconds * 1000);
-                // System.out.println("Frame time: " + (deltaSeconds * 1000) + "ms");
-            }
-        } catch (InterruptedException e) {}
+        Mesh shape = Shapes.sierpinskiTetrahedron(5);
+
+        long lastTime = System.nanoTime();
+        int totalFPS = 0;
+        int count = 0;
+
+        while (true) {
+            long startTime = System.nanoTime();
+            double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since last frame
+
+            // renderer.cam.rotateAroundOrigin(t, 2 - 2 * Math.sin(t / 5));
+            renderer.cam.rotateAroundOrigin(t, 3.5);
+            
+            renderer.out.clearBuffer();
+
+            renderer.drawMesh(shape);
+
+            renderer.out.drawBuffer();
+            gui.panel.repaint();
+
+            long endTime = System.nanoTime();
+            double deltaSeconds = (endTime - startTime) / 1_000_000_000.0;
+            int fps = (int)Math.round(1 / deltaSeconds);
+            renderer.out.panel.setFPS(fps, deltaSeconds * 1000);
+            totalFPS += fps;
+            count++;
+            // System.out.println(totalFPS / count);
+        }
     }
 }
