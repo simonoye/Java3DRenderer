@@ -87,58 +87,21 @@ public class GUI {
         }
     }
     public double calculateZOnTriangle(ProjFace face, double px, double py) {
-        // First, calculate barycentric coordinates from the x,y position
-        // Using the 2D projection of the triangle
-
         ProjPoint A = face.vertices[0];
         ProjPoint B = face.vertices[1];
         ProjPoint C = face.vertices[2];
 
-        // System.out.println(face);
-        // System.out.println(px + " : " + py);
-        
-        // Vector from A to C (in 2D)
-        double v0x = C.x - A.x;
-        double v0y = C.y - A.y;
-        
-        // Vector from A to B (in 2D)
-        double v1x = B.x - A.x;
-        double v1y = B.y - A.y;
-        
-        // Vector from A to P (in 2D)
-        double v2x = px - A.x;
-        double v2y = py - A.y;
+        ProjPoint v0 = new ProjPoint(A.x - C.x, A.y - C.y, 0);
+        ProjPoint v1 = new ProjPoint(B.x - C.x, B.y - C.y, 0);
+        ProjPoint v2 = new ProjPoint(px - C.x, py - C.y, 0);
 
-        // Compute dot products
-        double dot00 = v0x * v0x + v0y * v0y;
-        double dot01 = v0x * v1x + v0y * v1y;
-        double dot02 = v0x * v2x + v0y * v2y;
-        double dot11 = v1x * v1x + v1y * v1y;
-        double dot12 = v1x * v2x + v1y * v2y;
+        double denom = v0.cross(v1).z;
+    
+        double w1 = v2.cross(v1).z / denom;
+        double w2 = v0.cross(v2).z / denom;
+        double w0 = 1 - w1 - w2;
 
-        // Compute barycentric coordinates
-        double invDenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
-        double w = (dot11 * dot02 - dot01 * dot12) * invDenom;  // weight for C
-        double v = (dot00 * dot12 - dot01 * dot02) * invDenom;  // weight for B
-        double u = 1.0 - v - w;                                   // weight for A
-
-        // Check if point is inside triangle (optional)
-        if (u < 0 || v < 0 || w < 0) {
-            // Point is outside the triangle
-            return Double.NaN;  // or handle error appropriately
-        }
-
-        // Now interpolate the z-coordinate
-        return u * A.z + v * B.z + w * C.z;
-    }
-    public boolean isClockwise(ProjFace face) {
-        double sum = 0;
-        for (int i = 0; i < face.points; i++) {
-            ProjPoint p1 = face.vertices[i];
-            ProjPoint p2 = face.vertices[(i + 1) % face.points];
-            sum += (p2.x - p1.x) * (p2.y + p1.y);
-        }
-        return sum > 0;
+        return w0 * A.z + w1 * B.z + w2 * C.z;
     }
 
     public boolean pixelInsideFace(ProjFace face, int x, int y, boolean clockwise) {

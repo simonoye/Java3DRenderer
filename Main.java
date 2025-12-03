@@ -11,7 +11,7 @@ public class Main {
         // Camera cam = new Camera();
         GUI gui = new GUI(1500,900);
         Renderer renderer = new Renderer(cam1, gui);
-        Mesh shape = Shapes.sierpinskiTetrahedron(5);
+        Mesh shape = Shapes.sierpinskiTetrahedron(6);
 
         long lastTime = System.nanoTime();
         int totalFPS = 0;
@@ -19,7 +19,7 @@ public class Main {
 
         while (true) {
             long startTime = System.nanoTime();
-            double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since last frame
+            double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since start
 
             // renderer.cam.rotateAroundOrigin(t, 2 - 2 * Math.sin(t / 5));
             renderer.cam.rotateAroundOrigin(t, 3.5);
@@ -37,7 +37,7 @@ public class Main {
             renderer.out.panel.setFPS(fps, deltaSeconds * 1000);
             totalFPS += fps;
             count++;
-            // System.out.println(totalFPS / count);
+            System.out.println(totalFPS / count);
         }
     }
 }
