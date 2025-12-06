@@ -4,6 +4,8 @@ import javax.swing.JFrame;
 
 import HelperClasses.ProjFace;
 import HelperClasses.ProjPoint;
+import HelperClasses.PixelPoint;
+import HelperClasses.PixelFace;
 
 public class GUI {
     int width, height;
@@ -30,28 +32,28 @@ public class GUI {
         frame.setVisible(true);
     }
 
-    public void drawFace(ProjFace face) {
-        face = convertFace(face);
+    public void drawFace(ProjFace f) {
+        PixelFace face = convertFace(f);
 
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
 
-        for (ProjPoint p : face.vertices) {
-            if (p.x < minX) { minX = (int)p.x; }
-            if (p.x > maxX) { maxX = (int)p.x; }
-            if (p.y < minY) { minY = (int)p.y; }
-            if (p.y > maxY) { maxY = (int)p.y; }
+        for (PixelPoint p : face.vertices) {
+            if (p.x < minX) { minX = p.x; }
+            if (p.x > maxX) { maxX = p.x; }
+            if (p.y < minY) { minY = p.y; }
+            if (p.y > maxY) { maxY = p.y; }
         }
         
-        ProjPoint A = face.vertices[0];
-        ProjPoint B = face.vertices[1];
-        ProjPoint C = face.vertices[2];
+        PixelPoint A = face.vertices[0];
+        PixelPoint B = face.vertices[1];
+        PixelPoint C = face.vertices[2];
         
         double invA = 1f / face.vertices[0].z;
         double invB = 1f / face.vertices[1].z;
         double invC = 1f / face.vertices[2].z;
 
-        double area = edgeFunction(A, B, C);
+        int area = edgeFunction(A, B, C);
         // if (area <= 0) { return; }
 
         // A.rgb = Color.RED.getRGB();
@@ -62,7 +64,7 @@ public class GUI {
         for (int y = Math.max(minY, 0); y < Math.min(maxY + 1, height); ++y) { //clamp y bounds
             inside = false;
             for (int x = Math.max(minX, 0); x < Math.min(maxX + 1, width); ++x) { //clamp x bounds
-                ProjPoint currPixel = new ProjPoint(x, y, 0);
+                PixelPoint currPixel = new PixelPoint(x, y, 0);
 
                 double w0 = edgeFunction(currPixel, B, C);
                 double w1 = edgeFunction(currPixel, C, A);
@@ -139,25 +141,23 @@ public class GUI {
     }
 
 
-    private double edgeFunction(ProjPoint p1, ProjPoint p2, ProjPoint p3) {
+    private int edgeFunction(PixelPoint p1, PixelPoint p2, PixelPoint p3) {
         return (p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x);
     }
 
-    private ProjFace convertFace(ProjFace face) {
-        ProjPoint[] pixelCoordinateVertices = new ProjPoint[face.points];
+    private PixelFace convertFace(ProjFace face) {
+        PixelPoint[] pixelCoordinateVertices = new PixelPoint[face.points];
 
         for (int i = 0; i < face.points; ++i) {
-            int x = convertToScreenCoordinatesX(face.vertices[i].x);
-            int y = convertToScreenCoordinatesY(face.vertices[i].y);
-            
-            pixelCoordinateVertices[i] = new ProjPoint(
-                x, y, 
+            pixelCoordinateVertices[i] = new PixelPoint(
+                getScreenCoordinatesX(face.vertices[i].x), 
+                getScreenCoordinatesY(face.vertices[i].y), 
                 face.vertices[i].z, 
                 face.vertices[i].rgb
             );
         }
         
-        return new ProjFace(pixelCoordinateVertices);
+        return new PixelFace(pixelCoordinateVertices);
     }
 
     public void drawBuffer() {
@@ -184,35 +184,30 @@ public class GUI {
     static final int BOTTOM = 4; // 0100
     static final int TOP    = 8; // 1000
     
-    public void drawLine(double x1, double y1, double x2, double y2) {        
-        int pixelX1 = convertToScreenCoordinatesX(x1);
-        int pixelY1 = convertToScreenCoordinatesY(y1);
-        int pixelX2 = convertToScreenCoordinatesX(x2);
-        int pixelY2 = convertToScreenCoordinatesY(y2);
+    public void drawLine(ProjPoint p1in, ProjPoint p2in) {        
+        PixelPoint p1 = new PixelPoint(getScreenCoordinatesX(p1in.x), getScreenCoordinatesY(p1in.y), p1in.z);
+        PixelPoint p2 = new PixelPoint(getScreenCoordinatesX(p2in.x), getScreenCoordinatesY(p2in.y), p2in.z);
     
-        int p1Code = getRegionCode(pixelX1, pixelY1);
-        int p2Code = getRegionCode(pixelX2, pixelY2);
+        int p1Code = getRegionCode(p1.x, p1.y);
+        int p2Code = getRegionCode(p2.x, p2.y);
     
-        int[] p1 = new int[] {pixelX1, pixelY1};
-        int[] p2 = new int[] {pixelX2, pixelY2};
-    
-        float gradient;
-        if (pixelX1 == pixelX2) {gradient = Float.MAX_VALUE;}
-        else {gradient = (float)(pixelY2 - pixelY1) / (float)(pixelX2 - pixelX1);}
-        
         if ((p1Code & p2Code) != INSIDE) { return; } // if on same side of screen
 
         else if (p1Code != INSIDE && p2Code != INSIDE) { // if both arent inside screen
-            if (!isSegmentContainedByScreen(p1[0], p1[1], p2[0], p2[1])) { return; }
-        }
+            if (!lineIntersectsScreen(p1.x, p1.y, p2.x, p2.y)) { return; }
+        } 
 
-        else if ((p1Code | p2Code) != INSIDE) { // if at least one is outside screen
-            p1 = clipPoint(pixelX1, pixelY1, gradient);
-            p2 = clipPoint(pixelX2, pixelY2, gradient);
+        if ((p1Code | p2Code) != INSIDE) { // if at least one is outside screen
+            float gradient;
+            if (p1.x == p2.x) { gradient = Float.MAX_VALUE; }
+            else { gradient = (float)(p2.y - p1.y) / (float)(p2.x - p1.x); }
+
+            p1 = clipPoint(p1, gradient);
+            p2 = clipPoint(p2, gradient);
         }
     
-        if (p1 != new int[]{-1,-1} && p2 != new int[]{-1,-1}) {
-            bresenham(p1[0], p1[1], p2[0], p2[1]);
+        if (p1 != null && p2 != null) {
+            bresenham(p1, p2);
         }
     }
 
@@ -221,16 +216,16 @@ public class GUI {
         return crossProduct > 0;
     }
 
-    private boolean isSegmentContainedByScreen(int x1, int y1, int x2, int y2) {
+    private boolean lineIntersectsScreen(int x1, int y1, int x2, int y2) {
         boolean intersectsTop = intersectSegments(x1, y1, x2, y2, 0, 0, width, 0);
         boolean intersectsBottom = intersectSegments(x1, y1, x2, y2, 0, height, width, height);
         boolean intersectsLeft = intersectSegments(x1, y1, x2, y2, 0, 0, 0, height);
         boolean intersectsRight = intersectSegments(x1, y1, x2, y2, width, 0, width, height);
 
         if (intersectsTop || intersectsBottom || intersectsLeft || intersectsRight) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private boolean intersectSegments(int Ax, int Ay, int Bx, int By, int Cx, int Cy, int Dx, int Dy) {        
@@ -238,16 +233,16 @@ public class GUI {
             ccw(Cx, Cy, Dx, Dy, Ax, Ay) != ccw(Cx, Cy, Dx, Dy, Bx, By);
     }
 
-    private int[] clipPoint(int x, int y, float gradient) {
-        int nx = x;
-        int ny = y;
+    private PixelPoint clipPoint(PixelPoint p, float gradient) {
+        int nx = p.x;
+        int ny = p.y;
         
         final double nearZero = 1e-6;
         
         int code;
         int count = 0;
         while ((code = getRegionCode(nx, ny)) != INSIDE) {
-            if (++count > 2) { return new int[]{-1, -1}; } // doesnt intersect screen
+            if (++count > 2) { return null; } // doesnt intersect screen
 
             if ((code & TOP) != 0) { 
                 if (Math.abs(gradient) > nearZero) { // if gradient=0 dont change x
@@ -274,40 +269,46 @@ public class GUI {
                 nx = width - 1; 
             }
         }
-        return new int[]{ nx, ny };
+        return new PixelPoint(nx, ny, p.z);
     }
 
-    private void bresenham(int x1, int y1, int x2, int y2) {
+    private void bresenham(PixelPoint p1, PixelPoint p2) {
+        // System.err.println("p1: " + p1);
+        // System.err.println("p2: " + p2);
+        int dx = Math.abs(p2.x - p1.x);
+        int dy = Math.abs(p2.y - p1.y);
         
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        
-        int sx = x1 < x2 ? 1 : -1; // get direction to move
-        int sy = y1 < y2 ? 1 : -1;
+        int sx = p1.x < p2.x ? 1 : -1; // get direction to move
+        int sy = p1.y < p2.y ? 1 : -1;
         
         int err = dx - dy;
+
+        int x = p1.x;
+        int y = p1.y;
         
-        do {    
-            // if moving away from center of the screen we can 
-            // safely exit if we're outside of the screen
-            if (x1 > panel.getWidth() - 1 && sx == 1) { break; }
-            if (x1 < 0 && sx == -1) { break; }
-            if (y1 > panel.getHeight() - 1 && sy == 1) { break; }
-            if (y1 < 0 && sy == -1) { break; }
+        while (x != p2.x || y != p2.y) {    
+            // System.err.println("x: " + x);
+            // System.err.println("y: " + y);
+            if (x > width - 1) { break; }
+            if (x < 0) { break; }
+            if (y > height - 1) { break; }
+            if (y < 0) { break; }
             
-            panel.setPixel(x1, y1, Color.RED.getRGB());
+            zBuffer[y][x] = 1;
+            colorBuffer[y][x] = Color.RED.getRGB();
+            // panel.setPixel(x, y, Color.RED.getRGB());
             
             int e2 = 2 * err;
             
             if (e2 > -dy) {
                 err -= dy;
-                x1 += sx;
+                x += sx;
             }
             if (e2 < dx) {
                 err += dx;
-                y1 += sy;
+                y += sy;
             }
-        } while (x1 != x2 || y1 != y2);
+        }
     }
 
     private int getRegionCode(double x, double y) {
@@ -321,11 +322,11 @@ public class GUI {
         return out;
     }
 
-    private int convertToScreenCoordinatesX(double x) {
+    private int getScreenCoordinatesX(double x) {
         return (int)Math.round(x * width + width / 2);
     }
 
-    private int convertToScreenCoordinatesY(double y) {
+    private int getScreenCoordinatesY(double y) {
         return (int) (-y * height + height / 2);
     }
 }

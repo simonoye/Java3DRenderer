@@ -20,7 +20,6 @@ public class Shapes {
     }
 
     public static Mesh triangularPyramid() {
-
         Point[] pts = new Point[]{
             new Point(-1, -0.5, 0, Color.GREEN.getRGB()),
             new Point( 1, -0.5, 0, Color.RED.getRGB()),

@@ -59,13 +59,13 @@ public class Renderer {
         drawLine(face.vertices[0], face.vertices[face.vertices.length - 1]);
     }
 
-    private void drawLine(Point p1, Point p2) {
-        ProjPoint p1_2D = projectTo2D(p1);
-        if (p1_2D == null) { return; }
-        ProjPoint p2_2D = projectTo2D(p2);
-        if (p2_2D == null) { return; }
+    public void drawLine(Point p1in, Point p2in) {
+        ProjPoint p1 = projectTo2D(p1in);
+        if (p1 == null) { return; }
+        ProjPoint p2 = projectTo2D(p2in);
+        if (p1 == null) { return; }
         
-        out.drawLine(p1_2D.x, p1_2D.y, p2_2D.x, p2_2D.y);
+        out.drawLine(p1, p2);
     }
 
     private ProjPoint projectTo2D(Point point) {

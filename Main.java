@@ -3,6 +3,7 @@ import HelperClasses.Mesh;
 import HelperClasses.Shapes;
 import HelperClasses.Point;
 import HelperClasses.Rotation;
+import java.awt.Color;
 
 public class Main {
     static Camera cam;
@@ -10,18 +11,18 @@ public class Main {
     static Renderer renderer;
 
     public static void main(String[] args) { 
-        cam = new Camera(new Point(0, 0, 4), new Rotation(0, 0, 0));
+        cam = new Camera(new Point(1, 0, 4), new Rotation(0, 0, 0));
         // cam = new Camera();
         gui = new GUI(800,800);
         renderer = new Renderer(cam, gui);
         Mesh shape = Shapes.sierpinskiTetrahedron(5);
         // Mesh shape = Shapes.triangle();
 
-        long lastTime = System.nanoTime();
+        // long lastTime = System.nanoTime();
 
         while (true) {
             long startTime = System.nanoTime();
-            double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since start
+            // double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since start
 
             if (renderer.out.panel.dragging) {
                 dragCam(renderer.out.panel.iPos, renderer.out.panel.pos);
@@ -34,7 +35,8 @@ public class Main {
             
             renderer.out.clearBuffer();
 
-            renderer.drawMesh(shape);
+            renderer.drawWireframe(shape);
+            // renderer.drawLine(new Point(0, 1, 0, Color.GRAY.getRGB()), new Point(0, -1, 0, Color.GRAY.getRGB()));
 
             renderer.out.drawBuffer();
             gui.panel.updateScreen();
