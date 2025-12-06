@@ -4,14 +4,17 @@ import HelperClasses.Shapes;
 import HelperClasses.Point;
 import HelperClasses.Rotation;
 
-
 public class Main {
+    static Camera cam;
+    static GUI gui;
+    static Renderer renderer;
+
     public static void main(String[] args) { 
-        Camera cam1 = new Camera(new Point(0, 0, -5), new Rotation(0, 0, 0));
-        // Camera cam = new Camera();
-        GUI gui = new GUI(800,800);
-        Renderer renderer = new Renderer(cam1, gui);
-        Mesh shape = Shapes.sierpinskiTetrahedron(3);
+        cam = new Camera(new Point(0, 0, 4), new Rotation(0, 0, 0));
+        // cam = new Camera();
+        gui = new GUI(800,800);
+        renderer = new Renderer(cam, gui);
+        Mesh shape = Shapes.sierpinskiTetrahedron(5);
         // Mesh shape = Shapes.triangle();
 
         long lastTime = System.nanoTime();
@@ -20,9 +23,12 @@ public class Main {
             long startTime = System.nanoTime();
             double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since start
 
+            dragCam(renderer.out.panel.dragging, renderer.out.panel.iPos, renderer.out.panel.pos);
+
             // renderer.cam.rotateAroundOrigin(t, 2 - 2 * Math.sin(t / 5));
-            renderer.cam.rotateAroundOrigin(t, 3.5);
+            // renderer.cam.rotateAroundOrigin(t, 3.5);
             // renderer.cam.rotation.y = Math.sin(t);
+
             
             renderer.out.clearBuffer();
 
@@ -38,4 +44,16 @@ public class Main {
             // System.out.println(totalFPS / count);
         }
     }
+
+    public static void dragCam(boolean dragging, java.awt.Point iPos, java.awt.Point pos) {
+        if (dragging) {
+            int dx = pos.x - iPos.x;
+            int dy = pos.y - iPos.y;
+
+            cam.rotateAroundOrigin((double) dx / 100, (double) dy / 100, 4);
+
+            iPos.x = pos.x;
+            iPos.y = pos.y;
+        }
+    } 
 }

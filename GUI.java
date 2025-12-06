@@ -9,8 +9,8 @@ public class GUI {
     int width, height;
     RenderPanel panel;
     JFrame frame;
-    double[][] zBuffer;
-    int[][] colorBuffer;
+    private double[][] zBuffer;
+    private int[][] colorBuffer;
 
     public GUI(int width, int height) {
         this.width = width;
@@ -82,22 +82,22 @@ public class GUI {
                 if (z <= zBuffer[y][x]) { 
                     zBuffer[y][x] = z;
                     
-                    int M = 8;
+                    // int M = 8;
 
-                    // 2. checkerboard boolean
-                    boolean checker = ((int)(w1 * M) % 2 == 0) ^ ((int)(w2 * M) % 2 == 0);
+                    // // 2. checkerboard boolean
+                    // boolean checker = ((int)(w1 * M) % 2 == 0) ^ ((int)(w2 * M) % 2 == 0);
 
-                    // 3. assign color
-                    int colorA = Color.WHITE.getRGB();
-                    int colorB = Color.BLACK.getRGB();
-                    int color = checker ? colorA : colorB;
+                    // // 3. assign color
+                    // int colorA = Color.WHITE.getRGB();
+                    // int colorB = Color.BLACK.getRGB();
+                    // int color = checker ? colorA : colorB;
 
 
-                    // int color = interpolateColor(
-                    //     A.rgb,B.rgb, C.rgb,
-                    //     w0, w1, w2, 
-                    //     invA, invB, invC
-                    // );
+                    int color = interpolateColor(
+                        A.rgb,B.rgb, C.rgb,
+                        w0, w1, w2, 
+                        invA, invB, invC
+                    );
 
                     colorBuffer[y][x] = color;
                 }

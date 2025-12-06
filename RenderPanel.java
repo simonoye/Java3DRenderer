@@ -1,13 +1,19 @@
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class RenderPanel extends JPanel {
-    BufferedImage buffer;
-    int[] pixels;
-    JLabel text;
+    private BufferedImage buffer;
+    private int[] pixels;
+    private JLabel text;
+    Point iPos;
+    Point pos;
+    boolean dragging;
 
     public RenderPanel(int width, int height) {
         this.buffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -20,6 +26,29 @@ public class RenderPanel extends JPanel {
         text.setForeground(Color.RED);
         text.setBounds(5, -15, 400, 100);
         add(text);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                iPos = e.getPoint();
+                pos = e.getPoint();
+                dragging = true;
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                dragging = false;
+            }
+        });
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                // if (dragging) {
+                pos = e.getPoint();
+                // }
+            }
+        });
     }
 
     public void setFPS(int fps, double t) {
