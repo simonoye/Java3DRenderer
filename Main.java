@@ -23,8 +23,10 @@ public class Main {
             long startTime = System.nanoTime();
             double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since start
 
-            dragCam(renderer.out.panel.dragging, renderer.out.panel.iPos, renderer.out.panel.pos);
-
+            if (renderer.out.panel.dragging) {
+                dragCam(renderer.out.panel.iPos, renderer.out.panel.pos);
+            }
+            
             // renderer.cam.rotateAroundOrigin(t, 2 - 2 * Math.sin(t / 5));
             // renderer.cam.rotateAroundOrigin(t, 3.5);
             // renderer.cam.rotation.y = Math.sin(t);
@@ -45,15 +47,13 @@ public class Main {
         }
     }
 
-    public static void dragCam(boolean dragging, java.awt.Point iPos, java.awt.Point pos) {
-        if (dragging) {
-            int dx = pos.x - iPos.x;
-            int dy = pos.y - iPos.y;
+    public static void dragCam(java.awt.Point iPos, java.awt.Point pos) {
+        int dx = pos.x - iPos.x;
+        int dy = pos.y - iPos.y;
 
-            cam.rotateAroundOrigin((double) dx / 100, (double) dy / 100, 4);
+        cam.rotateAroundOrigin((double) dx / 200, (double) dy / 200, 4);
 
-            iPos.x = pos.x;
-            iPos.y = pos.y;
-        }
+        iPos.x = pos.x;
+        iPos.y = pos.y;
     } 
 }
