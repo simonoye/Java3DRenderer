@@ -38,19 +38,18 @@ public class Renderer {
                 vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
             }
             offset += mesh.numVertices[faceNum];
-            int color = (mesh.colorRGB == null) ? 0x00000 : mesh.colorRGB[faceNum];
-            drawFace(new Face(vertices), color); 
+            drawFace(new Face(vertices)); 
         }
     }
 
-    private void drawFace(Face face, int rgb) {
+    private void drawFace(Face face) {
         ProjPoint[] face2DVertices = new ProjPoint[face.vertices.length];
 
         for (int i = 0; i < face2DVertices.length; ++i) {
             face2DVertices[i] = projectTo2D(face.vertices[i]);
             if (face2DVertices[i] == null) { return; }
         }
-        out.drawFace(new ProjFace(face2DVertices), rgb);
+        out.drawFace(new ProjFace(face2DVertices));
     }  
 
     private void drawWireFace(Face face) {
@@ -77,8 +76,9 @@ public class Renderer {
 
         return new ProjPoint( //convert from 3d to 2d through similiar triangles
             (relativePoint.x / relativePoint.z) / aspect, 
-            (relativePoint.y / relativePoint.z),
-            -relativePoint.z
+            -(relativePoint.y / relativePoint.z),
+            -relativePoint.z,
+            point.rgb
         );
     }
 

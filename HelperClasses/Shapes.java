@@ -6,6 +6,44 @@ import java.util.Random;
 public class Shapes {
     static double phi = (1 + Math.sqrt(5)) / 2;
 
+    public static Mesh triangle() {
+        return new Mesh(
+            new int[]{3}, 
+            new int[]{
+                0,1,2
+            }, 
+            new Point[]{
+                new Point(-3,-1,-2),
+                new Point(-3,-1,0),
+                new Point(0,-1,0)
+            });
+    }
+
+    public static Mesh triangularPyramid() {
+
+        Point[] pts = new Point[]{
+            new Point(-1, -0.5, 0, Color.GREEN.getRGB()),
+            new Point( 1, -0.5, 0, Color.RED.getRGB()),
+            new Point( 0, 2.5 - Math.sqrt(2), 0, Color.BLUE.getRGB()),
+            new Point(0, 0.5, 1, Color.PINK.getRGB())
+        };
+
+        int[] numVertices = new int[]{
+            3, 3, 3, 3   // four triangular faces
+        };
+
+        int[] verticesIndex = new int[]{
+            0, 2, 1,
+            0, 1, 3,
+            1, 2, 3,
+            2, 0, 3
+        };
+
+        return new Mesh(numVertices, verticesIndex, pts);
+    }
+
+
+
     public static Mesh bottom_cube() {
         return new Mesh(
             new int[]{4,4},
@@ -28,12 +66,6 @@ public class Shapes {
     public static Mesh cube() {
         return new Mesh(
             new int[]{4,4,4,4,4,4},
-            new int[]{Color.GREEN.getRGB(),
-                        Color.RED.getRGB(), 
-                        Color.BLUE.getRGB(),
-                        Color.PINK.getRGB(),
-                        Color.BLACK.getRGB(),
-                        Color.WHITE.getRGB()},
             new int[]{
                 2,3,1,0,  // Front face (z=1): counter-clockwise from outside
                 4,5,7,6,  // Back face (z=-1): counter-clockwise from outside
@@ -333,7 +365,6 @@ public class Shapes {
         
         return new Mesh(numVertices, verticesIndex, points);
     }
-
     public static Mesh sierpinskiTetrahedron(int level) {
         Point[] basePoints = new Point[]{
             new Point(1, 1, 1),
@@ -341,15 +372,14 @@ public class Shapes {
             new Point(-1, 1, -1),
             new Point(1, -1, -1)
         };
-
         ArrayList<Point> pointsList = new ArrayList<>();
         ArrayList<int[]> facesList = new ArrayList<>();
-
-        subdivideTetra(basePoints[0], basePoints[1], basePoints[2], basePoints[3], level, pointsList, facesList);
-
+        Random r = new Random();
+        
+        subdivideTetra(basePoints[0], basePoints[1], basePoints[2], basePoints[3], level, pointsList, facesList, r);
+        
         int[] numVertices = new int[facesList.size()];
         int[] verticesIndex = new int[facesList.size() * 3];
-
         for (int i = 0; i < facesList.size(); i++) {
             numVertices[i] = 3;
             int[] f = facesList.get(i);
@@ -357,35 +387,30 @@ public class Shapes {
             verticesIndex[i * 3 + 1] = f[1];
             verticesIndex[i * 3 + 2] = f[2];
         }
-
-        Point[] points = pointsList.toArray(new Point[0]);
-        Random r = new Random();
-        int[] randomColors = new int[pointsList.size()];
-        for (int i = 0; i < randomColors.length; ++i) {
-            randomColors[i] = r.nextInt(16777216);
-        }
-        return new Mesh(numVertices, randomColors, verticesIndex, points);
-    }
-
         
-    private static void subdivideTetra(Point a, Point b, Point c, Point d, int level, ArrayList<Point> pointsList, ArrayList<int[]> facesList) {
+        Point[] points = pointsList.toArray(new Point[0]);
+        
+        return new Mesh(numVertices, verticesIndex, points);
+    }
+        
+    private static void subdivideTetra(Point a, Point b, Point c, Point d, int level, ArrayList<Point> pointsList, ArrayList<int[]> facesList, Random r) {
         if (level == 0) {
             int baseIndex = pointsList.size();
-            pointsList.add(a);
-            pointsList.add(b);
-            pointsList.add(c);
-            pointsList.add(d);
+            
+            // Add points with random colors
+            pointsList.add(new Point(a.x, a.y, a.z, r.nextInt(0x1000000)));
+            pointsList.add(new Point(b.x, b.y, b.z, r.nextInt(0x1000000)));
+            pointsList.add(new Point(c.x, c.y, c.z, r.nextInt(0x1000000)));
+            pointsList.add(new Point(d.x, d.y, d.z, r.nextInt(0x1000000)));
+            
             // 4 triangular faces with consistent outward-facing winding
-            // Face opposite to d (vertices a,b,c) - viewed from outside
             facesList.add(new int[]{baseIndex, baseIndex+2, baseIndex+1});
-            // Face opposite to c (vertices a,b,d) - viewed from outside
             facesList.add(new int[]{baseIndex, baseIndex+1, baseIndex+3});
-            // Face opposite to b (vertices a,c,d) - viewed from outside
             facesList.add(new int[]{baseIndex, baseIndex+3, baseIndex+2});
-            // Face opposite to a (vertices b,c,d) - viewed from outside
             facesList.add(new int[]{baseIndex+1, baseIndex+2, baseIndex+3});
             return;
         }
+        
         // midpoints
         Point ab = a.add(b).multiply(0.5);
         Point ac = a.add(c).multiply(0.5);
@@ -393,10 +418,10 @@ public class Shapes {
         Point bc = b.add(c).multiply(0.5);
         Point bd = b.add(d).multiply(0.5);
         Point cd = c.add(d).multiply(0.5);
-
-        subdivideTetra(a, ab, ac, ad, level-1, pointsList, facesList);
-        subdivideTetra(ab, b, bc, bd, level-1, pointsList, facesList);
-        subdivideTetra(ac, bc, c, cd, level-1, pointsList, facesList);
-        subdivideTetra(ad, bd, cd, d, level-1, pointsList, facesList);
+        
+        subdivideTetra(a, ab, ac, ad, level-1, pointsList, facesList, r);
+        subdivideTetra(ab, b, bc, bd, level-1, pointsList, facesList, r);
+        subdivideTetra(ac, bc, c, cd, level-1, pointsList, facesList, r);
+        subdivideTetra(ad, bd, cd, d, level-1, pointsList, facesList, r);
     }
 }

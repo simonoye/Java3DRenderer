@@ -4,11 +4,17 @@ public class ProjPoint {
     public double x;
     public double y;
     public double z;
+    public int rgb;
 
     public ProjPoint(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+    
+    public ProjPoint(double x, double y, double z, int rgb) {
+        this(x,y,z);
+        this.rgb = rgb;
     }
 
     public ProjPoint subtract(ProjPoint other) {
