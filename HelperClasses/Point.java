@@ -9,6 +9,7 @@ public class Point {
         this.x = x;
         this.y = y;
         this.z = z;
+        rgb = -1;
     }
     
     public Point(double x, double y, double z, int rgb) {

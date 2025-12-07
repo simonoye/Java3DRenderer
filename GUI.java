@@ -275,6 +275,9 @@ public class GUI {
         PixelPoint p1, PixelPoint p2, 
         int x, int y
     ) {
+        if (rgbA == -1) { rgbA = 0xA9A9A9; }
+        if (rgbB == -1) { rgbB = 0xA9A9A9; }
+
         int rA = (rgbA >> 16) & 0xFF;
         int gA = (rgbA >> 8) & 0xFF;
         int bA = rgbA & 0xFF;

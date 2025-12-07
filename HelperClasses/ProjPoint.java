@@ -10,6 +10,7 @@ public class ProjPoint {
         this.x = x;
         this.y = y;
         this.z = z;
+        rgb = -1;
     }
     
     public ProjPoint(double x, double y, double z, int rgb) {

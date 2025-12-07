@@ -68,6 +68,28 @@ public class Renderer {
         out.drawLine(p1, p2);
     }
 
+    public void drawAxis(double length, int steps) {
+        drawLine(new Point(0,length,0), new Point(0,-length,0));
+        drawLine(new Point(length,0,0), new Point(-length,0,0));
+        drawLine(new Point(0,0,length), new Point(0,0,-length));
+
+        for (int i = -steps; i <= steps; ++i) {
+            if (i == 0) { continue; }
+            drawLine( // y
+                new Point( 0.75f / steps,  i * length / steps, 0),
+                new Point(-0.75f / steps,  i * length / steps, 0)
+            );
+            drawLine(
+                new Point(i * length / steps, 0,  0.75f / steps),
+                new Point(i * length / steps, 0, -0.75f / steps)
+            );
+            drawLine(
+                new Point( 0.75f / steps, 0, i * length / steps),
+                new Point(-0.75f / steps, 0, i * length / steps)
+            );
+        }
+    }
+
     private ProjPoint projectTo2D(Point point) {
         Point relativePoint = toCameraSpace(point, cam);
 

@@ -34,6 +34,7 @@ public class Main {
 
             renderer.drawMesh(shape);
             // renderer.drawLine(new Point(0, 1, 0, Color.GRAY.getRGB()), new Point(0, -1, 0, Color.GRAY.getRGB()));
+            renderer.drawAxis(2, 10);
 
             renderer.out.drawBuffer();
             gui.panel.updateScreen();

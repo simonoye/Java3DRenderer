@@ -10,6 +10,7 @@ public class PixelPoint {
         this.x = x;
         this.y = y;
         this.z = z;
+        rgb = -1;
     }
     
     public PixelPoint(int x, int y, double z, int rgb) {
