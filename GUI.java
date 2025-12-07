@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.util.Arrays;
 import javax.swing.JFrame;
 
@@ -19,9 +18,6 @@ public class GUI {
         this.height = height;
 
         zBuffer = new double[height][width];
-        for (int y = 0; y < height; y++) {
-            Arrays.fill(zBuffer[y], Double.MAX_VALUE);
-        }
         colorBuffer = new int[height][width];
 
         panel = new RenderPanel(width, height);
@@ -185,8 +181,8 @@ public class GUI {
     static final int TOP    = 8; // 1000
     
     public void drawLine(ProjPoint p1in, ProjPoint p2in) {        
-        PixelPoint p1 = new PixelPoint(getScreenCoordinatesX(p1in.x), getScreenCoordinatesY(p1in.y), p1in.z);
-        PixelPoint p2 = new PixelPoint(getScreenCoordinatesX(p2in.x), getScreenCoordinatesY(p2in.y), p2in.z);
+        PixelPoint p1 = new PixelPoint(getScreenCoordinatesX(p1in.x), getScreenCoordinatesY(p1in.y), p1in.z, p1in.rgb);
+        PixelPoint p2 = new PixelPoint(getScreenCoordinatesX(p2in.x), getScreenCoordinatesY(p2in.y), p2in.z, p2in.rgb);
     
         int p1Code = getRegionCode(p1.x, p1.y);
         int p2Code = getRegionCode(p2.x, p2.y);
@@ -197,17 +193,19 @@ public class GUI {
             if (!lineIntersectsScreen(p1.x, p1.y, p2.x, p2.y)) { return; }
         } 
 
+        PixelPoint p1c = p1;
+        PixelPoint p2c = p2;
         if ((p1Code | p2Code) != INSIDE) { // if at least one is outside screen
             float gradient;
             if (p1.x == p2.x) { gradient = Float.MAX_VALUE; }
             else { gradient = (float)(p2.y - p1.y) / (float)(p2.x - p1.x); }
 
-            p1 = clipPoint(p1, gradient);
-            p2 = clipPoint(p2, gradient);
+            p1c = clipPoint(p1, gradient);
+            p2c = clipPoint(p2, gradient);
         }
     
         if (p1 != null && p2 != null) {
-            bresenham(p1, p2);
+            bresenham(p1c, p2c, p1, p2);
         }
     }
 
@@ -269,34 +267,67 @@ public class GUI {
                 nx = width - 1; 
             }
         }
-        return new PixelPoint(nx, ny, p.z);
+        return new PixelPoint(nx, ny, p.z, p.rgb);
     }
 
-    private void bresenham(PixelPoint p1, PixelPoint p2) {
-        // System.err.println("p1: " + p1);
-        // System.err.println("p2: " + p2);
-        int dx = Math.abs(p2.x - p1.x);
-        int dy = Math.abs(p2.y - p1.y);
+    private int interpolateColor2(
+        int rgbA, int rgbB,
+        PixelPoint p1, PixelPoint p2, 
+        int x, int y
+    ) {
+        int rA = (rgbA >> 16) & 0xFF;
+        int gA = (rgbA >> 8) & 0xFF;
+        int bA = rgbA & 0xFF;
+
+        int rB = (rgbB >> 16) & 0xFF;
+        int gB = (rgbB >> 8) & 0xFF;
+        int bB = rgbB & 0xFF;
+
+        int p12x = (p2.x - p1.x);
+        int p12y = (p2.y - p1.y);
+        int p1Px = (x - p1.x);
+        int p1Py = (y - p1.y);
+
+        double t = (double)(p1Px * p12x + p1Py * p12y) / (p12x*p12x + p12y*p12y);
+
+        double wP1 = (1 - t) * (1f / p1.z);
+        double wP2 = t * (1f / p2.z);
+
+        double sum = wP1 + wP2;
+
+        wP1 /= sum;
+        wP2 /= sum;
+
+        int r = (int)(rA * wP1 + rB * wP2);
+        int g = (int)(gA * wP1 + gB * wP2);
+        int b = (int)(bA * wP1 + bB * wP2);
+
+        return (r << 16) | (g << 8) | b;
+    }
+
+    private void bresenham(PixelPoint p1c, PixelPoint p2c, PixelPoint p1, PixelPoint p2) {
+        int dx = Math.abs(p2c.x - p1c.x);
+        int dy = Math.abs(p2c.y - p1c.y);
         
-        int sx = p1.x < p2.x ? 1 : -1; // get direction to move
-        int sy = p1.y < p2.y ? 1 : -1;
+        int sx = p1c.x < p2c.x ? 1 : -1; // get direction to move
+        int sy = p1c.y < p2c.y ? 1 : -1;
         
         int err = dx - dy;
 
-        int x = p1.x;
-        int y = p1.y;
+        int x = p1c.x;
+        int y = p1c.y;
         
-        while (x != p2.x || y != p2.y) {    
-            // System.err.println("x: " + x);
-            // System.err.println("y: " + y);
+        while (x != p2c.x || y != p2c.y) {    
             if (x > width - 1) { break; }
             if (x < 0) { break; }
             if (y > height - 1) { break; }
             if (y < 0) { break; }
-            
+
+
+
             zBuffer[y][x] = 1;
-            colorBuffer[y][x] = Color.RED.getRGB();
-            // panel.setPixel(x, y, Color.RED.getRGB());
+            int color = interpolateColor2(p1.rgb, p2.rgb, p1, p2, x, y);
+            colorBuffer[y][x] = color;
             
             int e2 = 2 * err;
             

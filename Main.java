@@ -3,7 +3,6 @@ import HelperClasses.Mesh;
 import HelperClasses.Shapes;
 import HelperClasses.Point;
 import HelperClasses.Rotation;
-import java.awt.Color;
 
 public class Main {
     static Camera cam;
@@ -11,7 +10,7 @@ public class Main {
     static Renderer renderer;
 
     public static void main(String[] args) { 
-        cam = new Camera(new Point(1, 0, 4), new Rotation(0, 0, 0));
+        cam = new Camera(new Point(0, 0, 4), new Rotation(0, 0, 0));
         // cam = new Camera();
         gui = new GUI(800,800);
         renderer = new Renderer(cam, gui);
@@ -30,12 +29,10 @@ public class Main {
             
             // renderer.cam.rotateAroundOrigin(t, 2 - 2 * Math.sin(t / 5));
             // renderer.cam.rotateAroundOrigin(t, 3.5);
-            // renderer.cam.rotation.y = Math.sin(t);
-
             
             renderer.out.clearBuffer();
 
-            renderer.drawWireframe(shape);
+            renderer.drawMesh(shape);
             // renderer.drawLine(new Point(0, 1, 0, Color.GRAY.getRGB()), new Point(0, -1, 0, Color.GRAY.getRGB()));
 
             renderer.out.drawBuffer();

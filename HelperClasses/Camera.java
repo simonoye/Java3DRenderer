@@ -44,10 +44,5 @@ public class Camera {
         // Look at origin
         rotation.y = Math.atan2(-position.x, position.z);
         rotation.x = Math.atan2(position.y, Math.sqrt(position.x * position.x + position.z * position.z));
-
-
-        // position.x = radius * Math.cos(tx);
-        // position.z = radius * Math.sin(tx);
-        // rotation.y = Math.atan2(-position.x, position.z); 
     }
 }

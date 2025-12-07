@@ -44,9 +44,7 @@ public class RenderPanel extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                // if (dragging) {
                 pos = e.getPoint();
-                // }
             }
         });
     }
