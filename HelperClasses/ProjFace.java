@@ -1,9 +1,9 @@
 package HelperClasses;
 public class ProjFace {
-    public ProjPoint[] vertices;
+    public ProjVec3[] vertices;
     public int points;
 
-    public ProjFace(ProjPoint[] vertices) {
+    public ProjFace(ProjVec3[] vertices) {
         this.vertices = vertices;
         this.points = vertices.length;
     }
@@ -11,7 +11,7 @@ public class ProjFace {
     @Override
     public String toString() {
         String output = "";
-        for (ProjPoint vertex : vertices) {
+        for (ProjVec3 vertex : vertices) {
             output += vertex.toString() + "\n";
         }
         return output;

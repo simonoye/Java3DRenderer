@@ -1,29 +1,29 @@
 package HelperClasses;
 
 public class Camera {
-    public Point position;
+    public Vec3 position;
     public Rotation rotation;
     double tx;
     double ty;
 
     public Camera() {
-        this.position = new Point(0, 0, 0);
+        this.position = new Vec3(0, 0, 0);
         this.rotation = new Rotation(0, 0, 0);
         tx = 0;
         ty = 0;
     }
 
-    public Camera(Point position) {
+    public Camera(Vec3 position) {
         this.position = position;
         this.rotation = new Rotation(0, 0, 0);
     }
 
     public Camera(Rotation rotation) {
-        this.position = new Point(0, 0, 0);
+        this.position = new Vec3(0, 0, 0);
         this.rotation = rotation;
     }
 
-    public Camera(Point position, Rotation rotation) {
+    public Camera(Vec3 position, Rotation rotation) {
         this.position = position;
         this.rotation = rotation;
     }

@@ -2,8 +2,10 @@ import HelperClasses.Camera;
 import HelperClasses.Face;
 import HelperClasses.ProjFace;
 import HelperClasses.Mesh;
-import HelperClasses.Point;
-import HelperClasses.ProjPoint;
+import HelperClasses.OBJ;
+import HelperClasses.Vec3;
+import HelperClasses.ProjVec3;
+import HelperClasses.Triangle;
 
 public class Renderer {
     Camera cam;
@@ -16,11 +18,23 @@ public class Renderer {
         aspect = (double) out.width / out.height;
     }
 
+    public void drawOBJ(OBJ obj) {
+        for (Triangle tri : obj.triangles) {
+            drawFace(tri);
+        }
+    }
+
+    public void drawWireOBJ(OBJ obj) {
+        for (Triangle tri : obj.triangles) {
+            drawWireFace(tri);
+        }
+    }
+
     public void drawWireframe(Mesh mesh) {
         int offset = 0;
-        Point[] vertices;
+        Vec3[] vertices;
         for (int numVertices : mesh.numVertices) {
-            vertices = new Point[numVertices];
+            vertices = new Vec3[numVertices];
             for (int i = 0; i < numVertices; ++i) {
                 vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
             }
@@ -31,9 +45,9 @@ public class Renderer {
 
     public void drawMesh(Mesh mesh) {
         int offset = 0;
-        Point[] vertices;
+        Vec3[] vertices;
         for (int faceNum = 0; faceNum < mesh.numVertices.length; faceNum++) {
-            vertices = new Point[mesh.numVertices[faceNum]];
+            vertices = new Vec3[mesh.numVertices[faceNum]];
             for (int i = 0; i < mesh.numVertices[faceNum]; ++i) {
                 vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
             }
@@ -42,8 +56,18 @@ public class Renderer {
         }
     }
 
+    private void drawFace(Triangle tri) {
+        ProjVec3[] face2DVertices = new ProjVec3[tri.points.length];
+
+        for (int i = 0; i < face2DVertices.length; ++i) {
+            face2DVertices[i] = projectTo2D(tri.points[i]);
+            if (face2DVertices[i] == null) { return; }
+        }
+        out.drawFace(new ProjFace(face2DVertices));
+    }
+
     private void drawFace(Face face) {
-        ProjPoint[] face2DVertices = new ProjPoint[face.vertices.length];
+        ProjVec3[] face2DVertices = new ProjVec3[face.vertices.length];
 
         for (int i = 0; i < face2DVertices.length; ++i) {
             face2DVertices[i] = projectTo2D(face.vertices[i]);
@@ -52,6 +76,13 @@ public class Renderer {
         out.drawFace(new ProjFace(face2DVertices));
     }  
 
+    private void drawWireFace(Triangle tri) {
+        for (int i = 0; i < tri.points.length - 1; i++) {
+            drawLine(tri.points[i], tri.points[i + 1]);
+        }
+        drawLine(tri.points[0], tri.points[tri.points.length - 1]);
+    }
+
     private void drawWireFace(Face face) {
         for (int i = 0; i < face.vertices.length - 1; i++) {
             drawLine(face.vertices[i], face.vertices[i + 1]);
@@ -59,44 +90,44 @@ public class Renderer {
         drawLine(face.vertices[0], face.vertices[face.vertices.length - 1]);
     }
 
-    private void drawLine(Point p1in, Point p2in) {
-        ProjPoint p1 = projectTo2D(p1in);
+    private void drawLine(Vec3 p1in, Vec3 p2in) {
+        ProjVec3 p1 = projectTo2D(p1in);
         if (p1 == null) { return; }
-        ProjPoint p2 = projectTo2D(p2in);
+        ProjVec3 p2 = projectTo2D(p2in);
         if (p2 == null) { return; }
         
         out.drawLine(p1, p2);
     }
 
     public void drawAxis(double length, int steps) {
-        drawLine(new Point(0,length,0), new Point(0,-length,0));
-        drawLine(new Point(length,0,0), new Point(-length,0,0));
-        drawLine(new Point(0,0,length), new Point(0,0,-length));
+        drawLine(new Vec3(0,length,0), new Vec3(0,-length,0));
+        drawLine(new Vec3(length,0,0), new Vec3(-length,0,0));
+        drawLine(new Vec3(0,0,length), new Vec3(0,0,-length));
 
         for (int i = -steps; i <= steps; ++i) {
             if (i == 0) { continue; }
             drawLine( // y
-                new Point( 0.75f / steps,  i * length / steps, 0),
-                new Point(-0.75f / steps,  i * length / steps, 0)
+                new Vec3( 0.75f / steps,  i * length / steps, 0),
+                new Vec3(-0.75f / steps,  i * length / steps, 0)
             );
-            drawLine(
-                new Point(i * length / steps, 0,  0.75f / steps),
-                new Point(i * length / steps, 0, -0.75f / steps)
+            drawLine( // x
+                new Vec3(i * length / steps, 0,  0.75f / steps),
+                new Vec3(i * length / steps, 0, -0.75f / steps)
             );
-            drawLine(
-                new Point( 0.75f / steps, 0, i * length / steps),
-                new Point(-0.75f / steps, 0, i * length / steps)
+            drawLine( // z
+                new Vec3( 0.75f / steps, 0, i * length / steps),
+                new Vec3(-0.75f / steps, 0, i * length / steps)
             );
         }
     }
 
-    private ProjPoint projectTo2D(Point point) {
-        Point relativePoint = toCameraSpace(point, cam);
+    private ProjVec3 projectTo2D(Vec3 point) {
+        Vec3 relativePoint = toCameraSpace(point, cam);
 
         if (Math.abs(relativePoint.z) < 1e-6) { return null; }
         if (relativePoint.z > 0) { return null; }
 
-        return new ProjPoint( //convert from 3d to 2d through similiar triangles
+        return new ProjVec3( //convert from 3d to 2d through similiar triangles
             (relativePoint.x / relativePoint.z) / aspect, 
             -(relativePoint.y / relativePoint.z),
             -relativePoint.z,
@@ -104,7 +135,7 @@ public class Renderer {
         );
     }
 
-    private Point toCameraSpace(Point p, Camera cam) {
+    private Vec3 toCameraSpace(Vec3 p, Camera cam) {
         p = p.subtract(cam.position);
 
         double cosY = Math.cos(cam.rotation.y);
@@ -120,6 +151,6 @@ public class Renderer {
         double y2 = p.y * cosX - z1 * sinX;
         double z2 = p.y * sinX + z1 * cosX;
 
-        return new Point(x1, y2, z2);
+        return new Vec3(x1, y2, z2);
     }
 }

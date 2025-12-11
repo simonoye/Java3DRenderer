@@ -1,7 +1,13 @@
+import java.io.FileNotFoundException;
+import java.io.IOError;
+import java.io.IOException;
+import java.util.Arrays;
+
 import HelperClasses.Camera;
 import HelperClasses.Mesh;
+import HelperClasses.OBJ;
 import HelperClasses.Shapes;
-import HelperClasses.Point;
+import HelperClasses.Vec3;
 import HelperClasses.Rotation;
 
 public class Main {
@@ -9,13 +15,23 @@ public class Main {
     static GUI gui;
     static Renderer renderer;
 
-    public static void main(String[] args) { 
-        cam = new Camera(new Point(0, 0, 4), new Rotation(0, 0, 0));
+    public static void main(String[] args) throws IOException { 
+        cam = new Camera(new Vec3(0, 0, 5), new Rotation(0, 0, 0));
         // cam = new Camera();
         gui = new GUI(800,800);
         renderer = new Renderer(cam, gui);
         Mesh shape = Shapes.sierpinskiTetrahedron(5);
         // Mesh shape = Shapes.triangle();
+
+        long objstart = System.nanoTime();
+        OBJParser objParser;
+        try { objParser = new OBJParser("OBJs/Porsche_911_GT2.obj"); }
+        catch (FileNotFoundException e) { e.printStackTrace(); return; }
+        objParser.parseOBJ();
+        OBJ obj = objParser.obj;
+        
+        double elapsedSeconds = (System.nanoTime() - objstart) / 1_000_000.0;
+        System.out.println("Parse time: " + elapsedSeconds + "ms");
 
         // long lastTime = System.nanoTime();
 
@@ -24,7 +40,7 @@ public class Main {
             // double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since start
 
             if (renderer.out.panel.dragging) {
-                dragCam(renderer.out.panel.iPos, renderer.out.panel.pos);
+                dragCam(renderer.out.panel.iPos, renderer.out.panel.pos, 5);
             }
             
             // renderer.cam.rotateAroundOrigin(t, 2 - 2 * Math.sin(t / 5));
@@ -32,8 +48,8 @@ public class Main {
             
             renderer.out.clearBuffer();
 
-            renderer.drawMesh(shape);
-            // renderer.drawLine(new Point(0, 1, 0, Color.GRAY.getRGB()), new Point(0, -1, 0, Color.GRAY.getRGB()));
+            // renderer.drawMesh(shape);
+            renderer.drawOBJ(obj);
             renderer.drawAxis(2, 10);
 
             renderer.out.drawBuffer();
@@ -47,11 +63,11 @@ public class Main {
         }
     }
 
-    public static void dragCam(java.awt.Point iPos, java.awt.Point pos) {
+    public static void dragCam(java.awt.Point iPos, java.awt.Point pos, double radius) {
         int dx = pos.x - iPos.x;
         int dy = pos.y - iPos.y;
 
-        cam.rotateAroundOrigin((double) dx / 200, (double) dy / 200, 4);
+        cam.rotateAroundOrigin((double) dx / 200, (double) dy / 200, radius);
 
         iPos.x = pos.x;
         iPos.y = pos.y;

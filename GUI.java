@@ -2,8 +2,8 @@ import java.util.Arrays;
 import javax.swing.JFrame;
 
 import HelperClasses.ProjFace;
-import HelperClasses.ProjPoint;
-import HelperClasses.PixelPoint;
+import HelperClasses.ProjVec3;
+import HelperClasses.PixelVec2;
 import HelperClasses.PixelFace;
 
 public class GUI {
@@ -34,21 +34,17 @@ public class GUI {
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
 
-        for (PixelPoint p : face.vertices) {
+        for (PixelVec2 p : face.vertices) {
             if (p.x < minX) { minX = p.x; }
             if (p.x > maxX) { maxX = p.x; }
             if (p.y < minY) { minY = p.y; }
             if (p.y > maxY) { maxY = p.y; }
         }
         
-        PixelPoint A = face.vertices[0];
-        PixelPoint B = face.vertices[1];
-        PixelPoint C = face.vertices[2];
+        PixelVec2 A = face.vertices[0];
+        PixelVec2 B = face.vertices[1];
+        PixelVec2 C = face.vertices[2];
         
-        double invA = 1f / face.vertices[0].z;
-        double invB = 1f / face.vertices[1].z;
-        double invC = 1f / face.vertices[2].z;
-
         int area = edgeFunction(A, B, C);
         // if (area <= 0) { return; }
 
@@ -60,7 +56,7 @@ public class GUI {
         for (int y = Math.max(minY, 0); y < Math.min(maxY + 1, height); ++y) { //clamp y bounds
             inside = false;
             for (int x = Math.max(minX, 0); x < Math.min(maxX + 1, width); ++x) { //clamp x bounds
-                PixelPoint currPixel = new PixelPoint(x, y, 0);
+                PixelVec2 currPixel = new PixelVec2(x, y, 0);
 
                 double w0 = edgeFunction(currPixel, B, C);
                 double w1 = edgeFunction(currPixel, C, A);
@@ -76,25 +72,13 @@ public class GUI {
                 w1 /= area;
                 w2 /= area;
 
-                double z = 1f / (w0 * invA + w1 * invB + w2 * invC);
+                double z = 1f / (w0 / A.z + w1 / B.z + w2 / C.z);
                 if (z <= zBuffer[y][x]) { 
                     zBuffer[y][x] = z;
-                    
-                    // int M = 8;
-
-                    // // 2. checkerboard boolean
-                    // boolean checker = ((int)(w1 * M) % 2 == 0) ^ ((int)(w2 * M) % 2 == 0);
-
-                    // // 3. assign color
-                    // int colorA = Color.WHITE.getRGB();
-                    // int colorB = Color.BLACK.getRGB();
-                    // int color = checker ? colorA : colorB;
-
 
                     int color = interpolateColor(
-                        A.rgb,B.rgb, C.rgb,
-                        w0, w1, w2, 
-                        invA, invB, invC
+                        A, B, C,
+                        w0, w1, w2 
                     );
 
                     colorBuffer[y][x] = color;
@@ -104,13 +88,16 @@ public class GUI {
     }
 
     private int interpolateColor(
-        int rgbA, int rgbB, int rgbC,
-        double w0, double w1, double w2,
-        double invA, double invB, double invC
+        PixelVec2 A, PixelVec2 B, PixelVec2 C,
+        double w0, double w1, double w2
     ) {
-        double w0p = w0 * invA; // perspective-correct weights
-        double w1p = w1 * invB;
-        double w2p = w2 * invC;
+        int rgbA = A.rgb;
+        int rgbB = B.rgb;
+        int rgbC = C.rgb;
+
+        double w0p = w0 / A.z; // perspective-correct weights
+        double w1p = w1 / B.z;
+        double w2p = w2 / C.z;
         double sum = w0p + w1p + w2p;
 
         w0p /= sum;
@@ -137,15 +124,15 @@ public class GUI {
     }
 
 
-    private int edgeFunction(PixelPoint p1, PixelPoint p2, PixelPoint p3) {
+    private int edgeFunction(PixelVec2 p1, PixelVec2 p2, PixelVec2 p3) {
         return (p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x);
     }
 
     private PixelFace convertFace(ProjFace face) {
-        PixelPoint[] pixelCoordinateVertices = new PixelPoint[face.points];
+        PixelVec2[] pixelCoordinateVertices = new PixelVec2[face.points];
 
         for (int i = 0; i < face.points; ++i) {
-            pixelCoordinateVertices[i] = new PixelPoint(
+            pixelCoordinateVertices[i] = new PixelVec2(
                 getScreenCoordinatesX(face.vertices[i].x), 
                 getScreenCoordinatesY(face.vertices[i].y), 
                 face.vertices[i].z, 
@@ -180,9 +167,9 @@ public class GUI {
     static final int BOTTOM = 4; // 0100
     static final int TOP    = 8; // 1000
     
-    public void drawLine(ProjPoint p1in, ProjPoint p2in) {        
-        PixelPoint p1 = new PixelPoint(getScreenCoordinatesX(p1in.x), getScreenCoordinatesY(p1in.y), p1in.z, p1in.rgb);
-        PixelPoint p2 = new PixelPoint(getScreenCoordinatesX(p2in.x), getScreenCoordinatesY(p2in.y), p2in.z, p2in.rgb);
+    public void drawLine(ProjVec3 p1in, ProjVec3 p2in) {        
+        PixelVec2 p1 = new PixelVec2(getScreenCoordinatesX(p1in.x), getScreenCoordinatesY(p1in.y), p1in.z, p1in.rgb);
+        PixelVec2 p2 = new PixelVec2(getScreenCoordinatesX(p2in.x), getScreenCoordinatesY(p2in.y), p2in.z, p2in.rgb);
     
         int p1Code = getRegionCode(p1.x, p1.y);
         int p2Code = getRegionCode(p2.x, p2.y);
@@ -193,8 +180,8 @@ public class GUI {
             if (!lineIntersectsScreen(p1.x, p1.y, p2.x, p2.y)) { return; }
         } 
 
-        PixelPoint p1c = p1;
-        PixelPoint p2c = p2;
+        PixelVec2 p1c = p1;
+        PixelVec2 p2c = p2;
         if ((p1Code | p2Code) != INSIDE) { // if at least one is outside screen
             float gradient;
             if (p1.x == p2.x) { gradient = Float.MAX_VALUE; }
@@ -204,7 +191,7 @@ public class GUI {
             p2c = clipPoint(p2, gradient);
         }
     
-        if (p1 != null && p2 != null) {
+        if (p1 != null && p2 != null && p1c != null && p2c != null) {
             bresenham(p1c, p2c, p1, p2);
         }
     }
@@ -231,7 +218,7 @@ public class GUI {
             ccw(Cx, Cy, Dx, Dy, Ax, Ay) != ccw(Cx, Cy, Dx, Dy, Bx, By);
     }
 
-    private PixelPoint clipPoint(PixelPoint p, float gradient) {
+    private PixelVec2 clipPoint(PixelVec2 p, float gradient) {
         int nx = p.x;
         int ny = p.y;
         
@@ -267,12 +254,12 @@ public class GUI {
                 nx = width - 1; 
             }
         }
-        return new PixelPoint(nx, ny, p.z, p.rgb);
+        return new PixelVec2(nx, ny, p.z, p.rgb);
     }
 
     private int interpolateColor2(
         int rgbA, int rgbB,
-        PixelPoint p1, PixelPoint p2, 
+        PixelVec2 p1, PixelVec2 p2, 
         int x, int y
     ) {
         if (rgbA == -1) { rgbA = 0xA9A9A9; }
@@ -308,7 +295,7 @@ public class GUI {
         return (r << 16) | (g << 8) | b;
     }
 
-    private void bresenham(PixelPoint p1c, PixelPoint p2c, PixelPoint p1, PixelPoint p2) {
+    private void bresenham(PixelVec2 p1c, PixelVec2 p2c, PixelVec2 p1, PixelVec2 p2) {
         int dx = Math.abs(p2c.x - p1c.x);
         int dy = Math.abs(p2c.y - p1c.y);
         
@@ -326,11 +313,13 @@ public class GUI {
             if (y > height - 1) { break; }
             if (y < 0) { break; }
 
-
-
-            zBuffer[y][x] = 1;
-            int color = interpolateColor2(p1.rgb, p2.rgb, p1, p2, x, y);
-            colorBuffer[y][x] = color;
+            if (zBuffer[y][x] >= Integer.MAX_VALUE - 1) { 
+                zBuffer[y][x] = Integer.MAX_VALUE - 1; 
+                int color = interpolateColor2(p1.rgb, p2.rgb, p1, p2, x, y);
+                colorBuffer[y][x] = color;
+            }
+            // int color = interpolateColor2(p1.rgb, p2.rgb, p1, p2, x, y);
+            // colorBuffer[y][x] = color;
             
             int e2 = 2 * err;
             

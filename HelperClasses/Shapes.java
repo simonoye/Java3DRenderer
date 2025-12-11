@@ -12,19 +12,19 @@ public class Shapes {
             new int[]{
                 0,1,2
             }, 
-            new Point[]{
-                new Point(-3,-1,-2),
-                new Point(-3,-1,0),
-                new Point(0,-1,0)
+            new Vec3[]{
+                new Vec3(-3,-1,-2),
+                new Vec3(-3,-1,0),
+                new Vec3(0,-1,0)
             });
     }
 
     public static Mesh triangularPyramid() {
-        Point[] pts = new Point[]{
-            new Point(-1, -0.5, 0, Color.GREEN.getRGB()),
-            new Point( 1, -0.5, 0, Color.RED.getRGB()),
-            new Point( 0, 2.5 - Math.sqrt(2), 0, Color.BLUE.getRGB()),
-            new Point(0, 0.5, 1, Color.PINK.getRGB())
+        Vec3[] pts = new Vec3[]{
+            new Vec3(-1, -0.5, 0, Color.GREEN.getRGB()),
+            new Vec3( 1, -0.5, 0, Color.RED.getRGB()),
+            new Vec3( 0, 2.5 - Math.sqrt(2), 0, Color.BLUE.getRGB()),
+            new Vec3(0, 0.5, 1, Color.PINK.getRGB())
         };
 
         int[] numVertices = new int[]{
@@ -50,15 +50,15 @@ public class Shapes {
                 2,3,7,6,  // Back face - OK
                 0,2,6,4
             },
-            new Point[]{
-            new Point(-1,-1, 1),
-            new Point( 1,-1, 1),
-            new Point(-1, 1, 1),
-            new Point( 1, 1, 1),
-            new Point(-1,-1,-1),
-            new Point( 1,-1,-1),
-            new Point(-1, 1,-1),
-            new Point( 1, 1,-1),
+            new Vec3[]{
+            new Vec3(-1,-1, 1),
+            new Vec3( 1,-1, 1),
+            new Vec3(-1, 1, 1),
+            new Vec3( 1, 1, 1),
+            new Vec3(-1,-1,-1),
+            new Vec3( 1,-1,-1),
+            new Vec3(-1, 1,-1),
+            new Vec3( 1, 1,-1),
         });
     }
 
@@ -73,15 +73,15 @@ public class Shapes {
                 0,4,6,2,  // Left face (x=-1): counter-clockwise from left
                 1,3,7,5   // Right face (x=1): counter-clockwise from right
             },
-            new Point[]{
-            new Point(-1,-1, 1),
-            new Point( 1,-1, 1),
-            new Point(-1, 1, 1),
-            new Point( 1, 1, 1),
-            new Point(-1,-1,-1),
-            new Point( 1,-1,-1),
-            new Point(-1, 1,-1),
-            new Point( 1, 1,-1),
+            new Vec3[]{
+            new Vec3(-1,-1, 1),
+            new Vec3( 1,-1, 1),
+            new Vec3(-1, 1, 1),
+            new Vec3( 1, 1, 1),
+            new Vec3(-1,-1,-1),
+            new Vec3( 1,-1,-1),
+            new Vec3(-1, 1,-1),
+            new Vec3( 1, 1,-1),
         });
     }
 
@@ -96,35 +96,35 @@ public class Shapes {
                 0,1,3,2,  // Bottom face - FIXED (was 0,2,3,1)
                 4,5,7,6   // Top face - FIXED (was 4,6,7,5)
             },
-            new Point[]{
-                new Point(-1,-1, 1),  // 0
-                new Point( 1,-1, 1),  // 1
-                new Point(-1, 1, 1),  // 2
-                new Point( 1, 1, 1),  // 3
-                new Point(-1,-1,-1),  // 4
-                new Point( 1,-1,-1),  // 5
-                new Point(-1, 1,-1),  // 6
-                new Point( 1, 1,-1),  // 7
+            new Vec3[]{
+                new Vec3(-1,-1, 1),  // 0
+                new Vec3( 1,-1, 1),  // 1
+                new Vec3(-1, 1, 1),  // 2
+                new Vec3( 1, 1, 1),  // 3
+                new Vec3(-1,-1,-1),  // 4
+                new Vec3( 1,-1,-1),  // 5
+                new Vec3(-1, 1,-1),  // 6
+                new Vec3( 1, 1,-1),  // 7
         });
     }
 
     
     public static Mesh icosahedron() {
-        Point[] vertices = new Point[]{
-            new Point(-1,  phi, 0),
-            new Point( 1,  phi, 0),
-            new Point(-1, -phi, 0),
-            new Point( 1, -phi, 0),
+        Vec3[] vertices = new Vec3[]{
+            new Vec3(-1,  phi, 0),
+            new Vec3( 1,  phi, 0),
+            new Vec3(-1, -phi, 0),
+            new Vec3( 1, -phi, 0),
             
-            new Point(0, -1,  phi),
-            new Point(0,  1,  phi),
-            new Point(0, -1, -phi),
-            new Point(0,  1, -phi),
+            new Vec3(0, -1,  phi),
+            new Vec3(0,  1,  phi),
+            new Vec3(0, -1, -phi),
+            new Vec3(0,  1, -phi),
             
-            new Point( phi, 0, -1),
-            new Point( phi, 0,  1),
-            new Point(-phi, 0, -1),
-            new Point(-phi, 0,  1)
+            new Vec3( phi, 0, -1),
+            new Vec3( phi, 0,  1),
+            new Vec3(-phi, 0, -1),
+            new Vec3(-phi, 0,  1)
         };
     
         // Each face is a triangle (3 vertex indices)
@@ -177,14 +177,14 @@ public class Shapes {
                 2,0,3,5,  // side
                 3,4,5,3   // back bottom (optional)
             },
-            new Point[]{
-                new Point(-1, -1,  1), // 0
-                new Point( 1, -1,  1), // 1
-                new Point( 0,  1,  1), // 2
+            new Vec3[]{
+                new Vec3(-1, -1,  1), // 0
+                new Vec3( 1, -1,  1), // 1
+                new Vec3( 0,  1,  1), // 2
 
-                new Point(-1, -1, -1), // 3
-                new Point( 1, -1, -1), // 4
-                new Point( 0,  1, -1), // 5
+                new Vec3(-1, -1, -1), // 3
+                new Vec3( 1, -1, -1), // 4
+                new Vec3( 0,  1, -1), // 5
             }
         );
     }
@@ -203,13 +203,13 @@ public class Shapes {
                 2,3,5,
                 0,2,5
             },
-            new Point[]{
-                new Point(-1, 0,  1), // 0
-                new Point( 1, 0,  1), // 1
-                new Point(-1, 0, -1), // 2
-                new Point( 1, 0, -1), // 3
-                new Point( 0, 1,  0), // 4 top
-                new Point( 0, -1, 0), // 5 bottom
+            new Vec3[]{
+                new Vec3(-1, 0,  1), // 0
+                new Vec3( 1, 0,  1), // 1
+                new Vec3(-1, 0, -1), // 2
+                new Vec3( 1, 0, -1), // 3
+                new Vec3( 0, 1,  0), // 4 top
+                new Vec3( 0, -1, 0), // 5 bottom
             }
         );
     }
@@ -218,7 +218,7 @@ public class Shapes {
     public static Mesh torus() {
         int radial = 32;    // slices around the circle
         int tubular = 32;   // slices around the tube
-        Point[] points = new Point[radial * tubular];
+        Vec3[] points = new Vec3[radial * tubular];
         int[] numVertices = new int[radial * tubular];
         int[] verticesIndex = new int[radial * tubular * 4]; // quads
 
@@ -233,7 +233,7 @@ public class Shapes {
                 double x = r * Math.sin(phi);
                 double y = (R + r * Math.cos(phi)) * Math.cos(theta);
                 double z = (R + r * Math.cos(phi)) * Math.sin(theta);
-                points[i * tubular + j] = new Point(x, y, z);
+                points[i * tubular + j] = new Vec3(x, y, z);
 
                 // define quads (four vertices each)
                 int nextI = (i + 1) % radial;
@@ -249,22 +249,22 @@ public class Shapes {
     }
 
     public static Mesh starIcosahedron() {
-        Point[] basePoints = new Point[]{
-            new Point(-1,  phi,  0),
-            new Point( 1,  phi,  0),
-            new Point(-1, -phi,  0),
-            new Point( 1, -phi,  0),
-            new Point( 0, -1,  phi),
-            new Point( 0,  1,  phi),
-            new Point( 0, -1, -phi),
-            new Point( 0,  1, -phi),
-            new Point( phi,  0, -1),
-            new Point( phi,  0,  1),
-            new Point(-phi,  0, -1),
-            new Point(-phi,  0,  1),
+        Vec3[] basePoints = new Vec3[]{
+            new Vec3(-1,  phi,  0),
+            new Vec3( 1,  phi,  0),
+            new Vec3(-1, -phi,  0),
+            new Vec3( 1, -phi,  0),
+            new Vec3( 0, -1,  phi),
+            new Vec3( 0,  1,  phi),
+            new Vec3( 0, -1, -phi),
+            new Vec3( 0,  1, -phi),
+            new Vec3( phi,  0, -1),
+            new Vec3( phi,  0,  1),
+            new Vec3(-phi,  0, -1),
+            new Vec3(-phi,  0,  1),
         };
 
-        Point[] points = new Point[basePoints.length * 2];
+        Vec3[] points = new Vec3[basePoints.length * 2];
         for (int i = 0; i < basePoints.length; i++) {
             points[i] = basePoints[i];                     // base vertex
             points[i + basePoints.length] = basePoints[i].multiply(1.5); // spike
@@ -301,23 +301,23 @@ public class Shapes {
 
     public static Mesh torusKnot(int steps, double R, double r, int p, int q, int tubeSegments) {
         // Generate the curve points
-        Point[] curvePoints = new Point[steps];
+        Vec3[] curvePoints = new Vec3[steps];
         for (int i = 0; i < steps; i++) {
             double t = 2 * Math.PI * i / steps;
             double x = (R + r * Math.cos(q * t)) * Math.cos(p * t);
             double y = (R + r * Math.cos(q * t)) * Math.sin(p * t);
             double z = r * Math.sin(q * t);
-            curvePoints[i] = new Point(x, y, z);
+            curvePoints[i] = new Vec3(x, y, z);
         }
         
         // Create tube around the curve
         double tubeRadius = 0.2; // Adjust thickness
         int totalPoints = steps * tubeSegments;
-        Point[] points = new Point[totalPoints];
+        Vec3[] points = new Vec3[totalPoints];
         
         for (int i = 0; i < steps; i++) {
-            Point current = curvePoints[i];
-            Point next = curvePoints[(i + 1) % steps];
+            Vec3 current = curvePoints[i];
+            Vec3 next = curvePoints[(i + 1) % steps];
             
             // Simple normal approximation (perpendicular to curve direction)
             double dx = next.x - current.x;
@@ -333,7 +333,7 @@ public class Shapes {
                 double nx = Math.cos(angle) * tubeRadius;
                 double ny = Math.sin(angle) * tubeRadius;
                 
-                points[i * tubeSegments + j] = new Point(
+                points[i * tubeSegments + j] = new Vec3(
                     current.x + nx,
                     current.y + ny,
                     current.z
@@ -365,13 +365,13 @@ public class Shapes {
         return new Mesh(numVertices, verticesIndex, points);
     }
     public static Mesh sierpinskiTetrahedron(int level) {
-        Point[] basePoints = new Point[]{
-            new Point(1, 1, 1),
-            new Point(-1, -1, 1),
-            new Point(-1, 1, -1),
-            new Point(1, -1, -1)
+        Vec3[] basePoints = new Vec3[]{
+            new Vec3(1, 1, 1),
+            new Vec3(-1, -1, 1),
+            new Vec3(-1, 1, -1),
+            new Vec3(1, -1, -1)
         };
-        ArrayList<Point> pointsList = new ArrayList<>();
+        ArrayList<Vec3> pointsList = new ArrayList<>();
         ArrayList<int[]> facesList = new ArrayList<>();
         Random r = new Random();
         
@@ -387,20 +387,20 @@ public class Shapes {
             verticesIndex[i * 3 + 2] = f[2];
         }
         
-        Point[] points = pointsList.toArray(new Point[0]);
+        Vec3[] points = pointsList.toArray(new Vec3[0]);
         
         return new Mesh(numVertices, verticesIndex, points);
     }
         
-    private static void subdivideTetra(Point a, Point b, Point c, Point d, int level, ArrayList<Point> pointsList, ArrayList<int[]> facesList, Random r) {
+    private static void subdivideTetra(Vec3 a, Vec3 b, Vec3 c, Vec3 d, int level, ArrayList<Vec3> pointsList, ArrayList<int[]> facesList, Random r) {
         if (level == 0) {
             int baseIndex = pointsList.size();
             
             // Add points with random colors
-            pointsList.add(new Point(a.x, a.y, a.z, r.nextInt(0x1000000)));
-            pointsList.add(new Point(b.x, b.y, b.z, r.nextInt(0x1000000)));
-            pointsList.add(new Point(c.x, c.y, c.z, r.nextInt(0x1000000)));
-            pointsList.add(new Point(d.x, d.y, d.z, r.nextInt(0x1000000)));
+            pointsList.add(new Vec3(a.x, a.y, a.z, r.nextInt(0x1000000)));
+            pointsList.add(new Vec3(b.x, b.y, b.z, r.nextInt(0x1000000)));
+            pointsList.add(new Vec3(c.x, c.y, c.z, r.nextInt(0x1000000)));
+            pointsList.add(new Vec3(d.x, d.y, d.z, r.nextInt(0x1000000)));
             
             // 4 triangular faces with consistent outward-facing winding
             facesList.add(new int[]{baseIndex, baseIndex+2, baseIndex+1});
@@ -411,12 +411,12 @@ public class Shapes {
         }
         
         // midpoints
-        Point ab = a.add(b).multiply(0.5);
-        Point ac = a.add(c).multiply(0.5);
-        Point ad = a.add(d).multiply(0.5);
-        Point bc = b.add(c).multiply(0.5);
-        Point bd = b.add(d).multiply(0.5);
-        Point cd = c.add(d).multiply(0.5);
+        Vec3 ab = a.add(b).multiply(0.5);
+        Vec3 ac = a.add(c).multiply(0.5);
+        Vec3 ad = a.add(d).multiply(0.5);
+        Vec3 bc = b.add(c).multiply(0.5);
+        Vec3 bd = b.add(d).multiply(0.5);
+        Vec3 cd = c.add(d).multiply(0.5);
         
         subdivideTetra(a, ab, ac, ad, level-1, pointsList, facesList, r);
         subdivideTetra(ab, b, bc, bd, level-1, pointsList, facesList, r);
