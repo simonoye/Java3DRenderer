@@ -61,8 +61,7 @@ public class OBJParser {
         }
 
         if (vertices.length == 3) { 
-            Vec3 normal = getNormal(vertices);
-            obj.triangles.add(new Triangle(vertices, normal)); 
+            obj.triangles.add(new Triangle(vertices, getNormal(vertices))); 
         }
         else {
             for (int i = 0; i < vertices.length - 2; ++i) {

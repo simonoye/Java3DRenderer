@@ -63,7 +63,24 @@ public class Renderer {
             face2DVertices[i] = projectTo2D(tri.points[i]);
             if (face2DVertices[i] == null) { return; }
         }
-        out.drawFace(new ProjFace(face2DVertices));
+        out.drawFace(new ProjFace(face2DVertices, normalToCamera(tri.normal)));
+    }
+
+    private Vec3 normalToCamera(Vec3 p) {
+        double cosY = Math.cos(cam.rotation.y);
+        double sinY = Math.sin(cam.rotation.y);
+        double cosX = Math.cos(cam.rotation.x);
+        double sinX = Math.sin(cam.rotation.x);
+
+        // y axis rotation
+        double x1 = p.x * cosY + p.z * sinY;
+        double z1 = - p.x * sinY + p.z * cosY;
+
+        // x axis rotation
+        double y2 = p.y * cosX - z1 * sinX;
+        double z2 = p.y * sinX + z1 * cosX;
+
+        return new Vec3(x1, y2, z2);
     }
 
     private void drawFace(Face face) {

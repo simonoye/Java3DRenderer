@@ -3,6 +3,7 @@ import javax.swing.JFrame;
 
 import HelperClasses.ProjFace;
 import HelperClasses.ProjVec3;
+import HelperClasses.Vec3;
 import HelperClasses.PixelVec2;
 import HelperClasses.PixelFace;
 
@@ -76,15 +77,27 @@ public class GUI {
                 if (z <= zBuffer[y][x]) { 
                     zBuffer[y][x] = z;
 
-                    int color = interpolateColor(
-                        A, B, C,
-                        w0, w1, w2 
-                    );
+                    // int color = interpolateColor(
+                    //     A, B, C,
+                    //     w0, w1, w2 
+                    // );
+
+                    int color = normalToColor(f.normal);
 
                     colorBuffer[y][x] = color;
                 }
             }
         }
+    }
+
+    // Convert normal to grayscale int (0xRRGGBB format)
+    public int normalToColor(Vec3 normal) {
+        double angle = Math.acos(-normal.dot(new Vec3(0, 0, -1)) / normal.magnitude());
+
+        // 0° = white, 90° = black
+        int gray = (int) ((1 - angle / (Math.PI / 2)) * 255);
+
+        return (gray << 16) | (gray << 8) | gray;
     }
 
     private int interpolateColor(
