@@ -1,6 +1,5 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ public class OBJParser {
     ArrayList<Vec3> points; 
     ArrayList<Vec3> normals; 
 
-    public OBJParser(String filename) throws FileNotFoundException, IOException{
+    public OBJParser(String filename) throws IOException{
         reader = new BufferedReader(new FileReader(new File(filename)));
         obj = new OBJ();
         points = new ArrayList<>();
@@ -39,9 +38,9 @@ public class OBJParser {
                 case "f": 
                     parseFace(parts);
                     break;
-                // case "vn":
-                //     parseNormals(parts);
-                //     break;
+                case "vn":
+                    parseNormals(parts);
+                    break;
             }
         }
     }
@@ -67,6 +66,7 @@ public class OBJParser {
             if (part.length == 0 || part[0].isEmpty()) { continue; }
 
             vertices[i - 1] = points.get(Integer.parseInt(part[0]) - 1);
+            vertices[i - 1].normal = normals.get(Integer.parseInt(part[2]) - 1);
         }
         Vec3 normal = getNormal(vertices[0], vertices[1], vertices[2]);
 

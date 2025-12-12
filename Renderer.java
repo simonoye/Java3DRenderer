@@ -11,11 +11,13 @@ public class Renderer {
     Camera cam;
     GUI out;
     double aspect;
+    boolean smoothShading;
 
-    public Renderer(Camera cam, GUI out) {
+    public Renderer(Camera cam, GUI out, boolean smoothShading) {
         this.cam = cam;
         this.out = out;
         aspect = (double) out.width / out.height;
+        this.smoothShading = smoothShading;
     }
 
     public void drawOBJ(OBJ obj) {
@@ -30,31 +32,31 @@ public class Renderer {
         }
     }
 
-    public void drawWireframe(Mesh mesh) {
-        int offset = 0;
-        Vec3[] vertices;
-        for (int numVertices : mesh.numVertices) {
-            vertices = new Vec3[numVertices];
-            for (int i = 0; i < numVertices; ++i) {
-                vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
-            }
-            offset += numVertices;
-            drawWireFace(new Face(vertices));
-        }
-    }
+    // public void drawWireframe(Mesh mesh) {
+    //     int offset = 0;
+    //     Vec3[] vertices;
+    //     for (int numVertices : mesh.numVertices) {
+    //         vertices = new Vec3[numVertices];
+    //         for (int i = 0; i < numVertices; ++i) {
+    //             vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
+    //         }
+    //         offset += numVertices;
+    //         drawWireFace(new Face(vertices));
+    //     }
+    // }
 
-    public void drawMesh(Mesh mesh) {
-        int offset = 0;
-        Vec3[] vertices;
-        for (int faceNum = 0; faceNum < mesh.numVertices.length; faceNum++) {
-            vertices = new Vec3[mesh.numVertices[faceNum]];
-            for (int i = 0; i < mesh.numVertices[faceNum]; ++i) {
-                vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
-            }
-            offset += mesh.numVertices[faceNum];
-            drawFace(new Face(vertices)); 
-        }
-    }
+    // public void drawMesh(Mesh mesh) {
+    //     int offset = 0;
+    //     Vec3[] vertices;
+    //     for (int faceNum = 0; faceNum < mesh.numVertices.length; faceNum++) {
+    //         vertices = new Vec3[mesh.numVertices[faceNum]];
+    //         for (int i = 0; i < mesh.numVertices[faceNum]; ++i) {
+    //             vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
+    //         }
+    //         offset += mesh.numVertices[faceNum];
+    //         drawFace(new Face(vertices)); 
+    //     }
+    // }
 
     private void drawFace(Triangle tri) {
         ProjVec3[] projTri = new ProjVec3[tri.points.length];
@@ -63,11 +65,14 @@ public class Renderer {
             projTri[i] = projectTo2D(tri.points[i]);
             if (projTri[i] == null) { return; }
         }
-        Vec3 normal = normalToCamera(tri.normal);
-        if (normal.z < 0) { // if facing away
-            return;
+        if (!smoothShading) {
+            Vec3 normal = normalToCamera(tri.normal);
+            if (normal.z < 0) { // if facing away
+                return;
+            }
+            out.drawFace(new ProjFace(projTri, normal), smoothShading);
         }
-        out.drawFace(new ProjFace(projTri, normal));
+        else { out.drawFace(new ProjFace(projTri), smoothShading); }
     }
 
     private Vec3 normalToCamera(Vec3 p) {
@@ -87,15 +92,15 @@ public class Renderer {
         return new Vec3(x1, y2, z2);
     }
 
-    private void drawFace(Face face) {
-        ProjVec3[] face2DVertices = new ProjVec3[face.vertices.length];
+    // private void drawFace(Face face) {
+    //     ProjVec3[] face2DVertices = new ProjVec3[face.vertices.length];
 
-        for (int i = 0; i < face2DVertices.length; ++i) {
-            face2DVertices[i] = projectTo2D(face.vertices[i]);
-            if (face2DVertices[i] == null) { return; }
-        }
-        out.drawFace(new ProjFace(face2DVertices));
-    }  
+    //     for (int i = 0; i < face2DVertices.length; ++i) {
+    //         face2DVertices[i] = projectTo2D(face.vertices[i]);
+    //         if (face2DVertices[i] == null) { return; }
+    //     }
+    //     out.drawFace(new ProjFace(face2DVertices));
+    // }  
 
     private void drawWireFace(Triangle tri) {
         for (int i = 0; i < tri.points.length - 1; i++) {
@@ -104,12 +109,12 @@ public class Renderer {
         drawLine(tri.points[0], tri.points[tri.points.length - 1]);
     }
 
-    private void drawWireFace(Face face) {
-        for (int i = 0; i < face.vertices.length - 1; i++) {
-            drawLine(face.vertices[i], face.vertices[i + 1]);
-        }
-        drawLine(face.vertices[0], face.vertices[face.vertices.length - 1]);
-    }
+    // private void drawWireFace(Face face) {
+    //     for (int i = 0; i < face.vertices.length - 1; i++) {
+    //         drawLine(face.vertices[i], face.vertices[i + 1]);
+    //     }
+    //     drawLine(face.vertices[0], face.vertices[face.vertices.length - 1]);
+    // }
 
     private void drawLine(Vec3 p1in, Vec3 p2in) {
         ProjVec3 p1 = projectTo2D(p1in);
@@ -143,6 +148,7 @@ public class Renderer {
     }
 
     private ProjVec3 projectTo2D(Vec3 point) {
+        if (point.normal == null) { point.normal = new Vec3(0, 0, 0); }
         Vec3 relativePoint = toCameraSpace(point, cam);
 
         if (relativePoint.z > -1e-6) { return null; }
@@ -152,6 +158,7 @@ public class Renderer {
             (relativePoint.x / relativePoint.z) / aspect, 
             -(relativePoint.y / relativePoint.z),
             -relativePoint.z,
+            normalToCamera(point.normal),
             point.rgb
         );
     }

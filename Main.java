@@ -1,7 +1,4 @@
-import java.io.FileNotFoundException;
-import java.io.IOError;
 import java.io.IOException;
-import java.util.Arrays;
 
 import HelperClasses.Camera;
 import HelperClasses.Mesh;
@@ -18,30 +15,29 @@ public class Main {
     public static void main(String[] args) throws IOException { 
         cam = new Camera(new Vec3(0, 0, 5), new Rotation(0, 0, 0));
         // cam = new Camera();
-        gui = new GUI(800,800);
-        renderer = new Renderer(cam, gui);
-        Mesh shape = Shapes.sierpinskiTetrahedron(5);
+        gui = new GUI(1500,900);
+        renderer = new Renderer(cam, gui, true);
+        // Mesh shape = Shapes.sierpinskiTetrahedron(5);
         // Mesh shape = Shapes.triangle();
 
         long objstart = System.nanoTime();
 
         OBJParser objParser;
-        try { objParser = new OBJParser("OBJs/porsche911.obj"); }
-        // try { objParser = new OBJParser("OBJs/Porsche_911_GT2.obj"); }
-        catch (FileNotFoundException e) { e.printStackTrace(); return; }
+        try { objParser = new OBJParser("OBJs/bugatti.obj"); }
+        catch (IOException e) { e.printStackTrace(); return; }
         OBJ obj = objParser.obj;
         
         double elapsedSeconds = (System.nanoTime() - objstart) / 1_000_000.0;
-        System.out.println("Parse time: " + elapsedSeconds + "ms");
+        System.out.println("OBJ parse time: " + elapsedSeconds + "ms");
 
         // long lastTime = System.nanoTime();
-        dragCam(new java.awt.Point(100,-100), new java.awt.Point(0,0), 5);
+        dragCam(new java.awt.Point(100,-100), new java.awt.Point(0,0), 10);
 
         while (true) {
             long startTime = System.nanoTime();
 
             if (renderer.out.panel.dragging) {
-                dragCam(renderer.out.panel.iPos, renderer.out.panel.pos, 5);
+                dragCam(renderer.out.panel.iPos, renderer.out.panel.pos, 10);
             }
             
             renderer.out.clearBuffer();

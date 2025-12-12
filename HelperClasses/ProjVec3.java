@@ -4,6 +4,7 @@ public class ProjVec3 {
     public double x;
     public double y;
     public double z;
+    public Vec3 normal;
     public int rgb;
 
     public ProjVec3(double x, double y, double z) {
@@ -16,6 +17,11 @@ public class ProjVec3 {
     public ProjVec3(double x, double y, double z, int rgb) {
         this(x,y,z);
         this.rgb = rgb;
+    }
+
+    public ProjVec3(double x, double y, double z, Vec3 normal, int rgb) {
+        this(x,y,z,rgb);
+        this.normal = normal;
     }
 
     public ProjVec3 subtract(ProjVec3 other) {

@@ -29,7 +29,7 @@ public class GUI {
         frame.setVisible(true);
     }
 
-    public void drawFace(ProjFace f) {
+    public void drawFace(ProjFace f, boolean smooth) {
         PixelFace face = convertFace(f);
 
         PixelVec2 A = face.vertices[0];
@@ -47,17 +47,29 @@ public class GUI {
             if (p.y < minY) { minY = p.y; }
             if (p.y > maxY) { maxY = p.y; }
         }
+
+        int Argb = normalToColor(f.vertices[0].normal);
+        int Brgb = normalToColor(f.vertices[1].normal);
+        int Crgb = normalToColor(f.vertices[2].normal);
         
         boolean inside;
         for (int y = Math.max(minY, 0); y < Math.min(maxY + 1, height); ++y) { //clamp y bounds
             inside = false;
             for (int x = Math.max(minX, 0); x < Math.min(maxX + 1, width); ++x) { //clamp x bounds
-                PixelVec2 currPixel = new PixelVec2(x, y, 0);
+                PixelVec2 pixel = new PixelVec2(x, y, 0);
 
-                double w0 = edgeFunction(currPixel, B, C);
-                double w1 = edgeFunction(currPixel, C, A);
-                double w2 = edgeFunction(currPixel, A, B);
+                int Ax = (A.x - pixel.x);
+                int Bx = (B.x - pixel.x);
+                int Cx = (C.x - pixel.x);
+
+                int Ay = (A.y - pixel.y);
+                int By = (B.y - pixel.y);
+                int Cy = (C.y - pixel.y);
                 
+                double w0 = Cy * Bx - Cx * By;
+                double w1 = Ay * Cx - Ax * Cy;
+                double w2 = By * Ax - Bx * Ay;
+
                 if (w0 < 0 || w1 < 0 || w2 < 0) { // if not in triangle
                     if (inside == true) { break; } //small optimisation at end of triangle
                     else { continue; }
@@ -72,7 +84,9 @@ public class GUI {
                 if (z < zBuffer[y][x]) { 
                     zBuffer[y][x] = z;
 
-                    int color = normalToColor(f.normal);
+                    int color = (smooth) ? 
+                        interpolateColor(Argb, Brgb, Crgb, w0, w1, w2, A.z, B.z, C.z) :
+                        normalToColor(f.normal);
 
                     colorBuffer[y][x] = color;
                 }
@@ -80,26 +94,22 @@ public class GUI {
         }
     }
 
-    public int normalToColor(Vec3 normal) {
+    private int normalToColor(Vec3 normal) {
         double angle = Math.acos(-normal.dot(new Vec3(0, 0, -1)) / normal.magnitude());
-
         // 0° = white, 90° = black
-        int gray = (int) ((1 - angle / (Math.PI / 2)) * 255);
+        int gray = clamp((int)((1 - angle / (Math.PI / 2)) * 255));
 
         return (gray << 16) | (gray << 8) | gray;
     }
 
     private int interpolateColor(
-        PixelVec2 A, PixelVec2 B, PixelVec2 C,
-        double w0, double w1, double w2
+        int rgbA, int rgbB, int rgbC,
+        double w0, double w1, double w2,
+        double z0, double z1, double z2
     ) {
-        int rgbA = A.rgb;
-        int rgbB = B.rgb;
-        int rgbC = C.rgb;
-
-        double w0p = w0 / A.z; // perspective-correct weights
-        double w1p = w1 / B.z;
-        double w2p = w2 / C.z;
+        double w0p = w0 / z0; // perspective-correct weights
+        double w1p = w1 / z1;
+        double w2p = w2 / z2;
         double sum = w0p + w1p + w2p;
 
         w0p /= sum;
@@ -118,13 +128,16 @@ public class GUI {
         int gC = (rgbC >> 8) & 0xFF;
         int bC = rgbC & 0xFF;
 
-        int r = (int)(rA * w0p + rB * w1p + rC * w2p);
-        int g = (int)(gA * w0p + gB * w1p + gC * w2p);
-        int b = (int)(bA * w0p + bB * w1p + bC * w2p);
+        int r = clamp((int)(rA * w0p + rB * w1p + rC * w2p));
+        int g = clamp((int)(gA * w0p + gB * w1p + gC * w2p));
+        int b = clamp((int)(bA * w0p + bB * w1p + bC * w2p));
 
         return (r << 16) | (g << 8) | b;
     }
 
+    private int clamp(int value) {
+        return Math.max(0, Math.min(255, value));
+    }
 
     private int edgeFunction(PixelVec2 p1, PixelVec2 p2, PixelVec2 p3) {
         return (p3.y - p1.y) * (p2.x - p1.x) - (p3.x - p1.x) * (p2.y - p1.y);
@@ -352,6 +365,6 @@ public class GUI {
     }
 
     private int getScreenCoordinatesY(double y) {
-        return (int) (-y * height + height / 2);
+        return (int)Math.round(-y * height + height / 2);
     }
 }
