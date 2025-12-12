@@ -1,7 +1,5 @@
 import HelperClasses.Camera;
-import HelperClasses.Face;
 import HelperClasses.ProjFace;
-import HelperClasses.Mesh;
 import HelperClasses.OBJ;
 import HelperClasses.Vec3;
 import HelperClasses.ProjVec3;
@@ -22,7 +20,7 @@ public class Renderer {
 
     public void drawOBJ(OBJ obj) {
         for (Triangle tri : obj.triangles) {
-            drawFace(tri);
+            drawTriangle(tri);
         }
     }
 
@@ -32,47 +30,25 @@ public class Renderer {
         }
     }
 
-    // public void drawWireframe(Mesh mesh) {
-    //     int offset = 0;
-    //     Vec3[] vertices;
-    //     for (int numVertices : mesh.numVertices) {
-    //         vertices = new Vec3[numVertices];
-    //         for (int i = 0; i < numVertices; ++i) {
-    //             vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
-    //         }
-    //         offset += numVertices;
-    //         drawWireFace(new Face(vertices));
-    //     }
-    // }
-
-    // public void drawMesh(Mesh mesh) {
-    //     int offset = 0;
-    //     Vec3[] vertices;
-    //     for (int faceNum = 0; faceNum < mesh.numVertices.length; faceNum++) {
-    //         vertices = new Vec3[mesh.numVertices[faceNum]];
-    //         for (int i = 0; i < mesh.numVertices[faceNum]; ++i) {
-    //             vertices[i] = mesh.points[mesh.verticesIndex[i + offset]];
-    //         }
-    //         offset += mesh.numVertices[faceNum];
-    //         drawFace(new Face(vertices)); 
-    //     }
-    // }
-
-    private void drawFace(Triangle tri) {
+    private void drawTriangle(Triangle tri) {
         ProjVec3[] projTri = new ProjVec3[tri.points.length];
 
         for (int i = 0; i < projTri.length; ++i) {
             projTri[i] = projectTo2D(tri.points[i]);
             if (projTri[i] == null) { return; }
         }
-        if (!smoothShading) {
+
+        if (smoothShading) {
+            out.drawFace(new ProjFace(projTri), true);
+        }
+
+        else { 
             Vec3 normal = normalToCamera(tri.normal);
             if (normal.z < 0) { // if facing away
                 return;
             }
-            out.drawFace(new ProjFace(projTri, normal), smoothShading);
+            out.drawFace(new ProjFace(projTri, normal), false);
         }
-        else { out.drawFace(new ProjFace(projTri), smoothShading); }
     }
 
     private Vec3 normalToCamera(Vec3 p) {
@@ -92,29 +68,12 @@ public class Renderer {
         return new Vec3(x1, y2, z2);
     }
 
-    // private void drawFace(Face face) {
-    //     ProjVec3[] face2DVertices = new ProjVec3[face.vertices.length];
-
-    //     for (int i = 0; i < face2DVertices.length; ++i) {
-    //         face2DVertices[i] = projectTo2D(face.vertices[i]);
-    //         if (face2DVertices[i] == null) { return; }
-    //     }
-    //     out.drawFace(new ProjFace(face2DVertices));
-    // }  
-
     private void drawWireFace(Triangle tri) {
         for (int i = 0; i < tri.points.length - 1; i++) {
             drawLine(tri.points[i], tri.points[i + 1]);
         }
         drawLine(tri.points[0], tri.points[tri.points.length - 1]);
     }
-
-    // private void drawWireFace(Face face) {
-    //     for (int i = 0; i < face.vertices.length - 1; i++) {
-    //         drawLine(face.vertices[i], face.vertices[i + 1]);
-    //     }
-    //     drawLine(face.vertices[0], face.vertices[face.vertices.length - 1]);
-    // }
 
     private void drawLine(Vec3 p1in, Vec3 p2in) {
         ProjVec3 p1 = projectTo2D(p1in);

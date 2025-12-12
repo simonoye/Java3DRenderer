@@ -2,6 +2,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import javax.swing.JLabel;
@@ -13,6 +15,8 @@ public class RenderPanel extends JPanel {
     private JLabel text;
     Point iPos;
     Point pos;
+    double radius;
+    double scrollChange;
     boolean dragging;
 
     public RenderPanel(int width, int height) {
@@ -26,6 +30,12 @@ public class RenderPanel extends JPanel {
         text.setForeground(Color.RED);
         text.setBounds(5, -15, 400, 100);
         add(text);
+
+        iPos = new Point();
+        pos = new Point();
+        scrollChange = 0;
+        radius = Main.radius;
+        dragging = false;
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -45,6 +55,14 @@ public class RenderPanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
                 pos = e.getPoint();
+            }
+        });
+
+        addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                scrollChange = e.getPreciseWheelRotation();
+                radius = Math.max(0, radius * (1 + scrollChange / 100));
             }
         });
     }

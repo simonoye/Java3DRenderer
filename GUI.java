@@ -48,23 +48,26 @@ public class GUI {
             if (p.y > maxY) { maxY = p.y; }
         }
 
-        int Argb = normalToColor(f.vertices[0].normal);
-        int Brgb = normalToColor(f.vertices[1].normal);
-        int Crgb = normalToColor(f.vertices[2].normal);
+        int Argb = -1;
+        int Brgb = -1;
+        int Crgb = -1;
+        if (smooth) {
+            Argb = normalToColor(f.vertices[0].normal);
+            Brgb = normalToColor(f.vertices[1].normal);
+            Crgb = normalToColor(f.vertices[2].normal);
+        }
         
         boolean inside;
         for (int y = Math.max(minY, 0); y < Math.min(maxY + 1, height); ++y) { //clamp y bounds
             inside = false;
             for (int x = Math.max(minX, 0); x < Math.min(maxX + 1, width); ++x) { //clamp x bounds
-                PixelVec2 pixel = new PixelVec2(x, y, 0);
+                int Ax = (A.x - x);
+                int Bx = (B.x - x);
+                int Cx = (C.x - x);
 
-                int Ax = (A.x - pixel.x);
-                int Bx = (B.x - pixel.x);
-                int Cx = (C.x - pixel.x);
-
-                int Ay = (A.y - pixel.y);
-                int By = (B.y - pixel.y);
-                int Cy = (C.y - pixel.y);
+                int Ay = (A.y - y);
+                int By = (B.y - y);
+                int Cy = (C.y - y);
                 
                 double w0 = Cy * Bx - Cx * By;
                 double w1 = Ay * Cx - Ax * Cy;
@@ -80,13 +83,17 @@ public class GUI {
                 w1 /= area;
                 w2 /= area;
 
-                double z = 1f / (w0 / A.z + w1 / B.z + w2 / C.z);
+                double w0p = w0 / A.z;
+                double w1p = w1 / B.z;
+                double w2p = w2 / C.z;
+
+                double z = 1f / (w0p + w1p + w2p);
                 if (z < zBuffer[y][x]) { 
                     zBuffer[y][x] = z;
 
                     int color = (smooth) ? 
-                        interpolateColor(Argb, Brgb, Crgb, w0, w1, w2, A.z, B.z, C.z) :
-                        normalToColor(f.normal);
+                        interpolateColor(Argb, Brgb, Crgb, w0p, w1p, w2p)
+                        : normalToColor(f.normal);
 
                     colorBuffer[y][x] = color;
                 }
@@ -95,21 +102,17 @@ public class GUI {
     }
 
     private int normalToColor(Vec3 normal) {
-        double angle = Math.acos(-normal.dot(new Vec3(0, 0, -1)) / normal.magnitude());
-        // 0° = white, 90° = black
-        int gray = clamp((int)((1 - angle / (Math.PI / 2)) * 255));
+        double angle = Math.acos(normal.z / normal.magnitude()); // dot product but look dir is (0, 0, -1)
+        // 0° = white, 90° or pi/2 = black 
+        int color = clamp((int)((1 - angle / (Math.PI / 2)) * 255));
 
-        return (gray << 16) | (gray << 8) | gray;
+        return (color << 16) | (color << 8) | color;
     }
 
     private int interpolateColor(
         int rgbA, int rgbB, int rgbC,
-        double w0, double w1, double w2,
-        double z0, double z1, double z2
+        double w0p, double w1p, double w2p
     ) {
-        double w0p = w0 / z0; // perspective-correct weights
-        double w1p = w1 / z1;
-        double w2p = w2 / z2;
         double sum = w0p + w1p + w2p;
 
         w0p /= sum;
