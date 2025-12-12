@@ -15,17 +15,21 @@ public class OBJParser {
     ArrayList<Vec3> points; 
     ArrayList<Vec3> normals; 
 
-    public OBJParser(String filename) throws FileNotFoundException {
+    public OBJParser(String filename) throws FileNotFoundException, IOException{
         reader = new BufferedReader(new FileReader(new File(filename)));
         obj = new OBJ();
         points = new ArrayList<>();
         normals = new ArrayList<>();
+        parseOBJ();
     }
 
     public void parseOBJ() throws IOException {
         String line;
         while ((line = reader.readLine()) != null) {
-            String[] parts = line.split(" ");
+            line = line.trim(); // Remove leading/trailing whitespace
+            if (line.isEmpty() || line.startsWith("#")) { continue; } // Skip empty lines and comments
+            String[] parts = line.split("\\s+"); // Split on any whitespace (handles multiple spaces)
+
             String keyword = parts[0];
 
             switch (keyword) {
@@ -35,14 +39,17 @@ public class OBJParser {
                 case "f": 
                     parseFace(parts);
                     break;
-                case "vn":
-                    parseNormals(parts);
-                    break;
+                // case "vn":
+                //     parseNormals(parts);
+                //     break;
             }
         }
     }
 
     public void parseNormals(String[] line) {
+        if (line.length < 4) { return; }
+        if (line[1].isEmpty() || line[2].isEmpty() || line[3].isEmpty()) { return; }
+            
         double x = Double.parseDouble(line[1]);
         double y = Double.parseDouble(line[2]);
         double z = Double.parseDouble(line[3]);
@@ -51,33 +58,34 @@ public class OBJParser {
     }
 
     public void parseFace(String[] line) {
+        if (line.length < 4) { return; }
         Vec3[] vertices = new Vec3[line.length - 1];
-        // Point[] triNormals = new Point[line.length - 1];
 
         for (int i = 1; i < line.length; ++i) {
+            if (line[i].isEmpty()) { continue; }
             String[] part = line[i].split("/");
+            if (part.length == 0 || part[0].isEmpty()) { continue; }
+
             vertices[i - 1] = points.get(Integer.parseInt(part[0]) - 1);
-            // triNormals[i - 1] = normals.get(Integer.parseInt(part[2]) - 1);
         }
+        Vec3 normal = getNormal(vertices[0], vertices[1], vertices[2]);
 
-        if (vertices.length == 3) { 
-            obj.triangles.add(new Triangle(vertices, getNormal(vertices))); 
+        for (int i = 1; i < vertices.length - 1; ++i) {
+            Vec3[] triVerts = new Vec3[]{vertices[0], vertices[i], vertices[i+1]};
+            obj.triangles.add(new Triangle(triVerts, normal));
         }
-        else {
-            for (int i = 0; i < vertices.length - 2; ++i) {
-                obj.triangles.add(new Triangle(new Vec3[]{vertices[i], vertices[i+1], vertices[i+2]}));
-            }
-        }
-
     }
 
-    private Vec3 getNormal(Vec3[] vertices) {
-        Vec3 A = vertices[1].subtract(vertices[0]);
-        Vec3 B = vertices[2].subtract(vertices[1]);
+    private Vec3 getNormal(Vec3 v1, Vec3 v2, Vec3 v3) {
+        Vec3 A = v2.subtract(v1);
+        Vec3 B = v3.subtract(v2);
         return A.cross(B);
     }
 
     public void parseVertex(String[] line) {
+        if (line.length != 4) { return; }
+        if (line[1].isEmpty() || line[2].isEmpty() || line[3].isEmpty()) { return; }
+            
         double x = Double.parseDouble(line[1]);
         double y = Double.parseDouble(line[2]);
         double z = Double.parseDouble(line[3]);

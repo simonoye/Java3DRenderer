@@ -57,13 +57,17 @@ public class Renderer {
     }
 
     private void drawFace(Triangle tri) {
-        ProjVec3[] face2DVertices = new ProjVec3[tri.points.length];
+        ProjVec3[] projTri = new ProjVec3[tri.points.length];
 
-        for (int i = 0; i < face2DVertices.length; ++i) {
-            face2DVertices[i] = projectTo2D(tri.points[i]);
-            if (face2DVertices[i] == null) { return; }
+        for (int i = 0; i < projTri.length; ++i) {
+            projTri[i] = projectTo2D(tri.points[i]);
+            if (projTri[i] == null) { return; }
         }
-        out.drawFace(new ProjFace(face2DVertices, normalToCamera(tri.normal)));
+        Vec3 normal = normalToCamera(tri.normal);
+        if (normal.z < 0) { // if facing away
+            return;
+        }
+        out.drawFace(new ProjFace(projTri, normal));
     }
 
     private Vec3 normalToCamera(Vec3 p) {
@@ -141,8 +145,8 @@ public class Renderer {
     private ProjVec3 projectTo2D(Vec3 point) {
         Vec3 relativePoint = toCameraSpace(point, cam);
 
-        if (Math.abs(relativePoint.z) < 1e-6) { return null; }
-        if (relativePoint.z > 0) { return null; }
+        if (relativePoint.z > -1e-6) { return null; }
+        // if (Math.abs(relativePoint.z) < 1e-6) { return null; }
 
         return new ProjVec3( //convert from 3d to 2d through similiar triangles
             (relativePoint.x / relativePoint.z) / aspect, 

@@ -32,9 +32,15 @@ public class GUI {
     public void drawFace(ProjFace f) {
         PixelFace face = convertFace(f);
 
+        PixelVec2 A = face.vertices[0];
+        PixelVec2 B = face.vertices[1];
+        PixelVec2 C = face.vertices[2];
+        
+        int area = edgeFunction(A, B, C);
+        if (area <= 0) { return; }
+
         int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
-
         for (PixelVec2 p : face.vertices) {
             if (p.x < minX) { minX = p.x; }
             if (p.x > maxX) { maxX = p.x; }
@@ -42,17 +48,6 @@ public class GUI {
             if (p.y > maxY) { maxY = p.y; }
         }
         
-        PixelVec2 A = face.vertices[0];
-        PixelVec2 B = face.vertices[1];
-        PixelVec2 C = face.vertices[2];
-        
-        int area = edgeFunction(A, B, C);
-        // if (area <= 0) { return; }
-
-        // A.rgb = Color.RED.getRGB();
-        // B.rgb = Color.BLUE.getRGB();
-        // C.rgb = Color.GREEN.getRGB();
-
         boolean inside;
         for (int y = Math.max(minY, 0); y < Math.min(maxY + 1, height); ++y) { //clamp y bounds
             inside = false;
@@ -62,25 +57,20 @@ public class GUI {
                 double w0 = edgeFunction(currPixel, B, C);
                 double w1 = edgeFunction(currPixel, C, A);
                 double w2 = edgeFunction(currPixel, A, B);
-
-                if (w0 > 0 || w1 > 0 || w2 > 0) { // if not in triangle
+                
+                if (w0 < 0 || w1 < 0 || w2 < 0) { // if not in triangle
                     if (inside == true) { break; } //small optimisation at end of triangle
                     else { continue; }
                 }
                 inside = true;
 
-                w0 /= area; // get weight proportions
+                w0 /= area; // get weights 
                 w1 /= area;
                 w2 /= area;
 
                 double z = 1f / (w0 / A.z + w1 / B.z + w2 / C.z);
-                if (z <= zBuffer[y][x]) { 
+                if (z < zBuffer[y][x]) { 
                     zBuffer[y][x] = z;
-
-                    // int color = interpolateColor(
-                    //     A, B, C,
-                    //     w0, w1, w2 
-                    // );
 
                     int color = normalToColor(f.normal);
 
@@ -90,7 +80,6 @@ public class GUI {
         }
     }
 
-    // Convert normal to grayscale int (0xRRGGBB format)
     public int normalToColor(Vec3 normal) {
         double angle = Math.acos(-normal.dot(new Vec3(0, 0, -1)) / normal.magnitude());
 
@@ -138,7 +127,7 @@ public class GUI {
 
 
     private int edgeFunction(PixelVec2 p1, PixelVec2 p2, PixelVec2 p3) {
-        return (p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x);
+        return (p3.y - p1.y) * (p2.x - p1.x) - (p3.x - p1.x) * (p2.y - p1.y);
     }
 
     private PixelFace convertFace(ProjFace face) {

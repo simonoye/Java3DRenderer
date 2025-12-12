@@ -24,31 +24,28 @@ public class Main {
         // Mesh shape = Shapes.triangle();
 
         long objstart = System.nanoTime();
+
         OBJParser objParser;
-        try { objParser = new OBJParser("OBJs/Porsche_911_GT2.obj"); }
+        try { objParser = new OBJParser("OBJs/porsche911.obj"); }
+        // try { objParser = new OBJParser("OBJs/Porsche_911_GT2.obj"); }
         catch (FileNotFoundException e) { e.printStackTrace(); return; }
-        objParser.parseOBJ();
         OBJ obj = objParser.obj;
         
         double elapsedSeconds = (System.nanoTime() - objstart) / 1_000_000.0;
         System.out.println("Parse time: " + elapsedSeconds + "ms");
 
         // long lastTime = System.nanoTime();
+        dragCam(new java.awt.Point(100,-100), new java.awt.Point(0,0), 5);
 
         while (true) {
             long startTime = System.nanoTime();
-            // double t = (startTime - lastTime) / 1_000_000_000.0; // seconds since start
 
             if (renderer.out.panel.dragging) {
                 dragCam(renderer.out.panel.iPos, renderer.out.panel.pos, 5);
             }
             
-            // renderer.cam.rotateAroundOrigin(t, 2 - 2 * Math.sin(t / 5));
-            // renderer.cam.rotateAroundOrigin(t, 3.5);
-            
             renderer.out.clearBuffer();
 
-            // renderer.drawMesh(shape);
             renderer.drawOBJ(obj);
             renderer.drawAxis(2, 10);
 
@@ -59,7 +56,6 @@ public class Main {
             double deltaSeconds = (endTime - startTime) / 1_000_000_000.0;
             int fps = (int)Math.round(1 / deltaSeconds);
             renderer.out.panel.setFPS(fps, deltaSeconds * 1000);
-            // System.out.println(totalFPS / count);
         }
     }
 
